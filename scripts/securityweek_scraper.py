@@ -1,11 +1,21 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+import random
+
 
 def fetch_articles(keywords):
-    url = 'https://www.bleepingcomputer.com/news/security/'
+    url = 'https://www.securityweek.com/'
+
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
+    ]
+
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': random.choice(user_agents)
     }
 
     response = requests.get(url, headers=headers)
@@ -14,17 +24,14 @@ def fetch_articles(keywords):
         return []
 
     soup = BeautifulSoup(response.text, 'html.parser')
-    articles = soup.select('ul#bc-home-news-main-wrap > li')
+    articles = soup.find_all('article', class_='node node-article node-teaser clearfix')
     print(f"Found {len(articles)} articles")
 
     keyword_articles = []
     for article in articles:
         try:
-            # Debugging lines to inspect the article content
-            # print(article.prettify())
-
-            title_element = article.find('h4').find('a')
-            summary_element = article.find('p')
+            title_element = article.find('h2', class_='title').find('a')
+            summary_element = article.find('div', class_='content')
             if not title_element or not summary_element:
                 print("Missing title or summary element")
                 continue
@@ -33,7 +40,7 @@ def fetch_articles(keywords):
             summary = summary_element.text.strip()
             url = title_element['href']
             if not url.startswith('http'):
-                url = 'https://www.bleepingcomputer.com' + url
+                url = 'https://www.securityweek.com' + url
 
             if any(re.search(r'\b' + re.escape(keyword.lower()) + r'\b', title.lower()) or
                    re.search(r'\b' + re.escape(keyword.lower()) + r'\b', summary.lower()) for keyword in keywords):
@@ -49,8 +56,9 @@ def fetch_articles(keywords):
 
     return keyword_articles
 
+
 if __name__ == "__main__":
-    keywords = ['cti', 'morocco']
+    keywords = ['Morocco', 'cyber attack', 'data breach']
     articles = fetch_articles(keywords)
     print(f"Total articles found: {len(articles)}")
     for article in articles:
