@@ -5,9 +5,10 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import re
+from Article import Article
 
 
-def scrape_hacker_news(keywords, max_pages=23):
+def hackernews_scraper(keywords, max_pages=23):
     # Setup Chrome options
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # Ensure GUI is off
@@ -42,7 +43,14 @@ def scrape_hacker_news(keywords, max_pages=23):
                 if url and any(re.search(r'\b' + re.escape(keyword) + r'\b', title, re.IGNORECASE) or
                                re.search(r'\b' + re.escape(keyword) + r'\b', url, re.IGNORECASE)
                                for keyword in keywords):
-                    articles_data.append({"title": title, "url": url})
+                    article = Article(
+                        title=title,
+                        url=url,
+                        summary="",  # No summary available from Hacker News
+                        date="",  # No date available from Hacker News
+                        keywords=', '.join(keywords)
+                    )
+                    articles_data.append(article)
                     print(f"Title: {title}")
                     print(f"URL: {url}")
                     print('-' * 80)
@@ -53,7 +61,17 @@ def scrape_hacker_news(keywords, max_pages=23):
         driver.quit()
         print("Driver closed.")
 
+    return articles_data
+
 
 if __name__ == "__main__":
     keywords = ["cybersecurity", "AI", "machine learning"]  # Add your keywords here
-    scrape_hacker_news(keywords)
+    articles = hackernews_scraper(keywords)
+    print(f"Total articles found: {len(articles)}")
+    for article in articles:
+        print(f"Title: {article.title}")
+        print(f"URL: {article.url}")
+        print(f"Summary: {article.summary}")
+        print(f"Date: {article.date}")
+        print(f"Keywords: {article.keywords}")
+        print("\n")

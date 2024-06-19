@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+from Article import Article
 
 
 def contains_keyword(text, keywords):
@@ -9,17 +10,18 @@ def contains_keyword(text, keywords):
             return True
     return False
 
-
-def scrape_infosecurity_magazine(keywords):
+def infosecurity_scraper(keywords):
     url = 'https://www.infosecurity-magazine.com/news/'
     response = requests.get(url)
+    articles_data = []
+
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
         articles = soup.find_all('li', class_='webpage-item')
 
         if not articles:
             print("No articles container found.")
-            return
+            return articles_data
 
         for article in articles:
             title_tag = article.find('h2', class_='h3 webpage-title')
@@ -31,24 +33,36 @@ def scrape_infosecurity_magazine(keywords):
                 summary = summary_tag.get_text(strip=True)
                 date_str = meta_tag.get_text(strip=True)
 
-                # Attempt to extract the date from the string
+                # Correct the date extraction logic
                 try:
-                    date = datetime.strptime(date_str, "%d %B %Y")
+                    date = datetime.strptime(date_str, "%d %b %Y").strftime('%Y-%m-%d')
                 except ValueError:
-                    date = None
+                    date = "N/A"
 
                 link = article.find('a')['href']
                 if not link.startswith('http'):
                     link = 'https://www.infosecurity-magazine.com' + link
 
                 if contains_keyword(title, keywords) or contains_keyword(summary, keywords):
-                    print(f"Title: {title}")
-                    print(f"URL: {link}")
-                    print(f"Summary: {summary}")
-                    print(f"Date: {date_str}")
-                    print('-' * 80)
+                    keyword_article = Article(
+                        title=title,
+                        url=link,
+                        summary=summary,
+                        date=date,
+                        keywords=', '.join(keywords)
+                    )
+                    articles_data.append(keyword_article)
 
+    return articles_data
 
 if __name__ == "__main__":
     keywords = ["ransomware", "spyware", "vulnerability"]  # Add your keywords here
-    scrape_infosecurity_magazine(keywords)
+    articles = infosecurity_scraper(keywords)
+    print(f"Total articles found: {len(articles)}")
+    for article in articles:
+        print(f"Title: {article.title}")
+        print(f"URL: {article.url}")
+        print(f"Summary: {article.summary}")
+        print(f"Date: {article.date}")
+        print(f"Keywords: {article.keywords}")
+        print("\n")
