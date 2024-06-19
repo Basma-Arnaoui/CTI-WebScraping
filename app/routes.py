@@ -13,7 +13,10 @@ def home():
 def filter_by_website():
     source = request.args.get('source')
     articles = Article.fetch_from_db(source)
-    return render_template('home.html', articles=articles)
+    if source is None:
+        source="All"
+    return render_template('home.html', articles=articles, current_filter=source)
+
 
 from .scheduler import start_scheduler
 

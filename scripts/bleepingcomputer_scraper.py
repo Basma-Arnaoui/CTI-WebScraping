@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-
 import sys
 import os
 
@@ -32,8 +31,7 @@ def bleepingcomputer_scraper(keywords):
             title_element = article.find('h4').find('a')
             summary_element = article.find('p')
             date_element = article.find('time')
-            image_element = article.find('img')
-
+            image_element = article.find('div', class_='bc_latest_news_img').find('img')
 
             if not title_element or not summary_element:
                 print("Missing title or summary element")
@@ -43,7 +41,23 @@ def bleepingcomputer_scraper(keywords):
             summary = summary_element.text.strip()
             date = date_element['datetime'].strip() if date_element and date_element.has_attr('datetime') else 'N/A'
             url = title_element['href']
-            image = image_element['src'] if image_element else None
+
+            # Handle lazy-loaded images with `data-src`
+            if image_element:
+                if image_element.has_attr('data-src'):
+                    image = image_element['data-src']
+                else:
+                    image = image_element['src']
+            else:
+                image = None
+
+            # Print the image element and its src attribute for debugging
+            print(f"Image Element: {image_element}")
+            print(f"Image Source: {image}")
+
+            # Absolute URL for the image if it's relative
+            if image and not image.startswith('http'):
+                image = 'https://www.bleepingcomputer.com' + image
 
             if not url.startswith('http'):
                 url = 'https://www.bleepingcomputer.com' + url
@@ -56,7 +70,7 @@ def bleepingcomputer_scraper(keywords):
                     summary=summary,
                     date=date,
                     keywords=', '.join(keywords),
-                    source = 'Bleeping Computer',
+                    source='Bleeping Computer',
                     image=image
                 )
                 keyword_article.save_to_db()

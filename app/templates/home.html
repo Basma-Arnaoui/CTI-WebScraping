@@ -1,22 +1,135 @@
-<!-- templates/home.html -->
-{% extends "base.html" %}
-
-{% block content %}
-<div class="row">
-    {% for article in articles %}
-    <div class="col-md-6">
-        <div class="card article-card">
-            {% if article.image %}
-            <img src="{{ article.image }}" class="card-img-top" alt="Article Image">
-            {% endif %}
-            <div class="card-body">
-                <h5 class="card-title article-title">{{ article.title }}</h5>
-                <p class="card-text article-summary">{{ article.summary }}</p>
-                <p class="card-text article-date">{{ article.date }}</p>
-                <a href="{{ article.url }}" class="btn btn-primary" target="_blank">Read More</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTI News Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .article-container {
+            display: flex;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .article-image {
+            flex: 0 0 150px;
+            height: 150px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+        .article-content {
+            flex: 1;
+        }
+        .article-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .article-summary {
+            max-height: 60px;
+            overflow: hidden;
+            position: relative;
+            line-height: 1.5;
+        }
+        .article-summary::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 1.25em;
+            background: linear-gradient(to top, white, rgba(255, 255, 255, 0));
+        }
+        .read-more-link {
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .article-container.expanded .article-summary {
+            max-height: none;
+        }
+        .article-container.expanded .article-summary::after {
+            display: none;
+        }
+        .article-container.expanded .read-more-link {
+            display: none;
+        }
+        .full {
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            padding: 5px;
+            text-decoration: underline;
+        }
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 220px;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            border-right: 1px solid #ddd;
+        }
+        .sidebar a {
+            display: block;
+            padding: 10px 15px;
+            margin: 5px 0;
+            color: #333;
+            text-decoration: none;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+        .content {
+            margin-left: 240px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Sources</h2>
+        <a href="/" class="btn {% if current_filter == 'All' or not current_filter %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+        <a href="/filter?source=Bleeping%20Computer" class="btn {% if current_filter == 'Bleeping Computer' %}btn-primary{% else %}btn-secondary{% endif %}">Bleeping Computer</a>
+        <a href="/filter?source=The%20Hacker%20News" class="btn {% if current_filter == 'The Hacker News' %}btn-primary{% else %}btn-secondary{% endif %}">The Hacker News</a>
+        <a href="/filter?source=Hacker%20News" class="btn {% if current_filter == 'Hacker News' %}btn-primary{% else %}btn-secondary{% endif %}">Hacker News</a>
+        <a href="/filter?source=Security%20Week" class="btn {% if current_filter == 'Security Week' %}btn-primary{% else %}btn-secondary{% endif %}">Security Week</a>
+        <a href="/filter?source=Info%20Security" class="btn {% if current_filter == 'Info Security' %}btn-primary{% else %}btn-secondary{% endif %}">Info Security</a>
+    </div>
+    <div class="content">
+        <h1>CTI News Dashboard</h1>
+        <div class="row mt-4">
+            <div class="col-12">
+                {% for article in articles %}
+                <div class="article-container">
+                    <img src="{{ article.image }}" alt="Article Image" class="article-image">
+                    <div class="article-content">
+                        <div class="article-title">{{ article.title }}</div>
+                        <div class="article-summary">{{ article.summary }}</div>
+                        <a class="read-more-link">Read more</a>
+                        <p><strong>Date:</strong> {{ article.date }}</p>
+                        <p><a class="full" href="{{ article.url }}" target="_blank">Read full article</a></p>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
-    {% endfor %}
-</div>
-{% endblock %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll('.read-more-link').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    let articleContainer = this.closest('.article-container');
+                    articleContainer.classList.toggle('expanded');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

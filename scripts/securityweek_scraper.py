@@ -1,8 +1,14 @@
 import feedparser
 import re
 from bs4 import BeautifulSoup
-from app.models import Article
+import sys
+import os
 
+# Add the parent directory of 'app' to PYTHONPATH
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Now you can import from app.models
+from app.models import Article
 
 def securityweek_scraper(keywords):
     rss_url = "https://feeds.feedburner.com/securityweek"
@@ -11,10 +17,17 @@ def securityweek_scraper(keywords):
     keyword_articles = []
 
     for entry in feed.entries:
+        print("a")
         title = entry.title
-        summary = BeautifulSoup(entry.summary, "html.parser").get_text()
+        summary_html = entry.summary
+        summary = BeautifulSoup(summary_html, "html.parser").get_text()
         url = entry.link
         date = entry.published if 'published' in entry else 'N/A'
+
+        # Extract the image from the summary HTML
+        summary_soup = BeautifulSoup(summary_html, "html.parser")
+        image_element = summary_soup.find('img')
+        image = image_element['src'] if image_element else None
 
         if any(re.search(r'\b' + re.escape(keyword.lower()) + r'\b', title.lower()) or
                re.search(r'\b' + re.escape(keyword.lower()) + r'\b', summary.lower()) for keyword in keywords):
@@ -24,15 +37,17 @@ def securityweek_scraper(keywords):
                 summary=summary,
                 date=date,
                 keywords=', '.join(keywords),
-                source='Security Week'
+                source='Security Week',
+                image=image
             )
             keyword_article.save_to_db()
             keyword_articles.append(keyword_article)
 
     return keyword_articles
 
+
 if __name__ == "__main__":
-    keywords = ['automation', 'cyber attack', 'data breach', 'ransomware']
+    keywords = ['automation', 'cyber attack', 'data breach', 'deployed']
     articles = securityweek_scraper(keywords)
     print(f"Total articles found: {len(articles)}")
     for article in articles:
@@ -42,4 +57,5 @@ if __name__ == "__main__":
         print(f"Summary: {article_dict['summary']}")
         print(f"Date: {article_dict['date']}")
         print(f"Keywords: {article_dict['keywords']}")
+        print(f"Image: {article.image}")
         print("\n")

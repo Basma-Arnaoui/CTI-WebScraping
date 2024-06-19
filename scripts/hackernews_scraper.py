@@ -5,10 +5,16 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import re
+import sys
+import os
+
+# Add the parent directory of 'app' to PYTHONPATH
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Now you can import from app.models
 from app.models import Article
 
-
-def hackernews_scraper(keywords, max_pages=3):
+def hackernews_scraper(keywords, max_pages=1):
     # Setup Chrome options
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # Ensure GUI is off

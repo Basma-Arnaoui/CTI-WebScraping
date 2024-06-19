@@ -1,8 +1,14 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
-from app.models import Article
+import sys
+import os
 
+# Add the parent directory of 'app' to PYTHONPATH
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Now you can import from app.models
+from app.models import Article
 
 def contains_keyword(text, keywords):
     for keyword in keywords:
