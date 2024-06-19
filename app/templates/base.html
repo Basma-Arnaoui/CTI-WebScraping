@@ -1,0 +1,64 @@
+<!-- templates/base.html -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>News Aggregator</title>
+    <style>
+        .article-card {
+            margin-bottom: 20px;
+        }
+        .article-title {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .article-summary {
+            font-size: 1em;
+        }
+        .article-date {
+            font-size: 0.9em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">News Aggregator</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">All</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/filter?source=Bleeping%20Computer">Bleeping Computer</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/filter?source=The%20Hacker%20News">The Hacker News</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/filter?source=Hacker%20News">Hacker News</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/filter?source=Security%20Week">Security Week</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/filter?source=Infosecurity%20Magazine">Infosecurity Magazine</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

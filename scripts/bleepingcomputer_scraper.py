@@ -1,7 +1,15 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-from Article import Article
+
+import sys
+import os
+
+# Add the parent directory of 'app' to PYTHONPATH
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Now you can import from app.models
+from app.models import Article
 
 def bleepingcomputer_scraper(keywords):
     url = 'https://www.bleepingcomputer.com/news/security/'
@@ -24,6 +32,8 @@ def bleepingcomputer_scraper(keywords):
             title_element = article.find('h4').find('a')
             summary_element = article.find('p')
             date_element = article.find('time')
+            image_element = article.find('img')
+
 
             if not title_element or not summary_element:
                 print("Missing title or summary element")
@@ -33,6 +43,8 @@ def bleepingcomputer_scraper(keywords):
             summary = summary_element.text.strip()
             date = date_element['datetime'].strip() if date_element and date_element.has_attr('datetime') else 'N/A'
             url = title_element['href']
+            image = image_element['src'] if image_element else None
+
             if not url.startswith('http'):
                 url = 'https://www.bleepingcomputer.com' + url
 
@@ -43,8 +55,11 @@ def bleepingcomputer_scraper(keywords):
                     url=url,
                     summary=summary,
                     date=date,
-                    keywords=', '.join(keywords)
+                    keywords=', '.join(keywords),
+                    source = 'Bleeping Computer',
+                    image=image
                 )
+                keyword_article.save_to_db()
                 keyword_articles.append(keyword_article)
         except Exception as e:
             print(f"Error parsing article: {e}")
@@ -61,4 +76,5 @@ if __name__ == "__main__":
         print(f"Summary: {article.summary}")
         print(f"Date: {article.date}")
         print(f"Keywords: {article.keywords}")
+        print(article.image)
         print("\n")

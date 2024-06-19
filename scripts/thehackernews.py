@@ -1,7 +1,7 @@
 import feedparser
 import re
 from bs4 import BeautifulSoup
-from Article import Article
+from app.models import Article
 
 
 def thehackernews_scraper(keywords):
@@ -27,9 +27,11 @@ def thehackernews_scraper(keywords):
                 url=url,
                 summary=summary,
                 date=date,
-                keywords=', '.join(keywords)
+                keywords=', '.join(keywords),
+                source='The Hacker News'
             )
             keyword_articles.append(keyword_article)
+            keyword_article.save_to_db()
             print(f"Title: {title}")
             print(f"URL: {url}")
             print(f"Published: {date}")

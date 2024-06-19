@@ -5,10 +5,10 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import re
-from Article import Article
+from app.models import Article
 
 
-def hackernews_scraper(keywords, max_pages=23):
+def hackernews_scraper(keywords, max_pages=3):
     # Setup Chrome options
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # Ensure GUI is off
@@ -48,8 +48,10 @@ def hackernews_scraper(keywords, max_pages=23):
                         url=url,
                         summary="",  # No summary available from Hacker News
                         date="",  # No date available from Hacker News
-                        keywords=', '.join(keywords)
+                        keywords=', '.join(keywords),
+                        source='Hacker News',
                     )
+                    article.save_to_db()
                     articles_data.append(article)
                     print(f"Title: {title}")
                     print(f"URL: {url}")

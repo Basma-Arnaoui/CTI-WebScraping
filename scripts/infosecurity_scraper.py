@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
-from Article import Article
+from app.models import Article
 
 
 def contains_keyword(text, keywords):
@@ -27,6 +27,7 @@ def infosecurity_scraper(keywords):
             title_tag = article.find('h2', class_='h3 webpage-title')
             summary_tag = article.find('p', class_='webpage-summary')
             meta_tag = article.find('span', class_='webpage-meta')
+            image_tag = article.find('img')
 
             if title_tag and summary_tag and meta_tag:
                 title = title_tag.get_text(strip=True)
@@ -40,6 +41,8 @@ def infosecurity_scraper(keywords):
                     date = "N/A"
 
                 link = article.find('a')['href']
+                image = image_tag['src'] if image_tag else None
+
                 if not link.startswith('http'):
                     link = 'https://www.infosecurity-magazine.com' + link
 
@@ -49,8 +52,11 @@ def infosecurity_scraper(keywords):
                         url=link,
                         summary=summary,
                         date=date,
-                        keywords=', '.join(keywords)
+                        keywords=', '.join(keywords),
+                        source='Info Security',
+                        image=image
                     )
+                    keyword_article.save_to_db()
                     articles_data.append(keyword_article)
 
     return articles_data

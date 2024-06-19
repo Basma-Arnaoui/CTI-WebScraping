@@ -1,2 +1,6 @@
-client id : a0kzd0pzQVh5RGFxbm12N2hYQkw6MTpjaQ
-client secret : lcQpr4Gb-UZqOOSnqnYPCGS-ddL6UsZsLpdjuRWwddTrTQpqch
+Flask
+beautifulsoup4
+requests
+feedparser
+apscheduler
+webdriver-manager

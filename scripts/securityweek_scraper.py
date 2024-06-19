@@ -1,7 +1,7 @@
 import feedparser
 import re
 from bs4 import BeautifulSoup
-from Article import Article
+from app.models import Article
 
 
 def securityweek_scraper(keywords):
@@ -23,8 +23,10 @@ def securityweek_scraper(keywords):
                 url=url,
                 summary=summary,
                 date=date,
-                keywords=', '.join(keywords)
+                keywords=', '.join(keywords),
+                source='Security Week'
             )
+            keyword_article.save_to_db()
             keyword_articles.append(keyword_article)
 
     return keyword_articles
