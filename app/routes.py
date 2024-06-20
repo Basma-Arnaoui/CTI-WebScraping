@@ -1,31 +1,28 @@
-# app/routes.py
-
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from app.models import Article
-from app.run_scrapers import run_all_scrapers
 
 app = Flask(__name__)
 
-
 @app.route('/')
 def home():
-    articles = Article.fetch_from_db()
-    return render_template('home.html', articles=articles)
+    return redirect(url_for('filter_by_keywords', source='All'))
 
-
-@app.route('/filter', methods=['GET', 'POST'])
-def filter_by_website():
-    source = request.args.get('source')
-    keywords = request.args.get('keywords', '').split(',')
-
+@app.route('/filter', methods=['POST', 'GET'])
+def filter_by_keywords():
     if request.method == 'POST':
-        # Run all scrapers with the provided keywords
-        run_all_scrapers(keywords)
+        keywords = request.form.get('keywords', '').split(',')
+        source = request.form.get('source')
+    else:
+        keywords = request.args.get('keywords', '').split(',')
+        source = request.args.get('source', 'All')
 
-    articles = Article.fetch_from_db(source, keywords)
-    return render_template('home.html', articles=articles, current_filter=source, current_keywords=keywords)
+    articles = Article.fetch_from_db(source if source != 'All' else None, keywords)
+    return render_template('home.html', articles=articles, current_filter=source, keywords=keywords)
 
-
+@app.route('/clear_filters', methods=['POST'])
+def clear_filters():
+    source = request.form.get('current_filter', 'All')
+    return redirect(url_for('filter_by_keywords', source=source, keywords=''))
 
 from .scheduler import start_scheduler
 

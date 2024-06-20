@@ -1,24 +1,21 @@
-# app/models.py
-
 import sqlite3
 import os
 
 DATABASE = os.path.join(os.path.dirname(__file__), '..', 'articles.db')
 
 class Article:
-    def __init__(self, title, url, summary, date, keywords, source, image=None):
+    def __init__(self, title, url, summary, date, source, image=None):
         self.title = title
         self.url = url
         self.summary = summary
         self.date = date
-        self.keywords = keywords
         self.source = source
         self.image = image
 
     @classmethod
     def fetch_from_db(cls, source=None, keywords=[]):
         conn = sqlite3.connect(DATABASE)
-        query = 'SELECT title, url, summary, date, keywords, source, image FROM articles'
+        query = 'SELECT title, url, summary, date, source, image FROM articles'
         params = []
 
         if source:
@@ -26,16 +23,17 @@ class Article:
             params.append(source)
 
         if keywords:
+            keyword_query = ' OR '.join(['title GLOB ? OR summary GLOB ? OR url GLOB ?' for _ in keywords])
             if source:
-                query += ' AND '
+                query += f' AND ({keyword_query})'
             else:
-                query += ' WHERE '
-            query += ' AND '.join(['(title LIKE ? OR summary LIKE ?)' for _ in keywords])
-            params.extend([f'%{keyword}%', f'%{keyword}%'] for keyword in keywords)
+                query += f' WHERE {keyword_query}'
+            for keyword in keywords:
+                params.extend([f'*{keyword}*', f'*{keyword}*', f'*{keyword}*'])
 
-        cursor = conn.execute(query, [item for sublist in params for item in sublist])
+        cursor = conn.execute(query, params)
         articles = [
-            cls(title=row[0], url=row[1], summary=row[2], date=row[3], keywords=row[4], source=row[5], image=row[6])
+            cls(title=row[0], url=row[1], summary=row[2], date=row[3], source=row[4], image=row[5])
             for row in cursor.fetchall()
         ]
         conn.close()
@@ -44,8 +42,8 @@ class Article:
     def save_to_db(self):
         conn = sqlite3.connect(DATABASE)
         conn.execute(
-            'INSERT INTO articles (title, url, summary, date, keywords, source, image) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            (self.title, self.url, self.summary, self.date, self.keywords, self.source, self.image)
+            'INSERT INTO articles (title, url, summary, date, source, image) VALUES (?, ?, ?, ?, ?, ?)',
+            (self.title, self.url, self.summary, self.date, self.source, self.image)
         )
         conn.commit()
         conn.close()
@@ -59,7 +57,6 @@ def initialize_db():
             url TEXT,
             summary TEXT,
             date TEXT,
-            keywords TEXT,
             source TEXT,
             image TEXT
         )

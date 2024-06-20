@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Now you can import from app.models
 from app.models import Article
 
-def thehackernews_scraper(keywords):
+def thehackernews_scraper():
     rss_url = "https://feeds.feedburner.com/TheHackersNews"
     feed = feedparser.parse(rss_url)
 
@@ -18,7 +18,6 @@ def thehackernews_scraper(keywords):
     print(f"Fetching articles from RSS feed at {rss_url}...")
 
     # Create a list of regex patterns for each keyword to match whole words only
-    keyword_patterns = [re.compile(r'\b' + re.escape(keyword) + r'\b', re.IGNORECASE) for keyword in keywords]
 
     for entry in feed.entries:
         title = entry.title
@@ -30,24 +29,18 @@ def thehackernews_scraper(keywords):
         image = entry.enclosures[0]['url'] if 'enclosures' in entry and entry.enclosures else None
 
         # Check if any of the keywords are in the title or summary using regex
-        if any(pattern.search(title) or pattern.search(summary) for pattern in keyword_patterns):
-            keyword_article = Article(
+
+        keyword_article = Article(
                 title=title,
                 url=url,
                 summary=summary,
                 date=date,
-                keywords=', '.join(keywords),
                 source='The Hacker News',
                 image=image
             )
-            keyword_articles.append(keyword_article)
-            keyword_article.save_to_db()
-            print(f"Title: {title}")
-            print(f"URL: {url}")
-            print(f"Published: {date}")
-            print(f"Summary: {summary}")
-            print(f"Image: {image}")
-            print('-' * 80)
+        keyword_articles.append(keyword_article)
+        keyword_article.save_to_db()
+
 
     print(f"Total articles found: {len(keyword_articles)}")
     return keyword_articles

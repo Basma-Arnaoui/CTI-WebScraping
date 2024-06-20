@@ -10,14 +10,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Now you can import from app.models
 from app.models import Article
 
-def securityweek_scraper(keywords):
+def securityweek_scraper():
     rss_url = "https://feeds.feedburner.com/securityweek"
     feed = feedparser.parse(rss_url)
 
     keyword_articles = []
 
     for entry in feed.entries:
-        print("a")
         title = entry.title
         summary_html = entry.summary
         summary = BeautifulSoup(summary_html, "html.parser").get_text()
@@ -29,19 +28,17 @@ def securityweek_scraper(keywords):
         image_element = summary_soup.find('img')
         image = image_element['src'] if image_element else None
 
-        if any(re.search(r'\b' + re.escape(keyword.lower()) + r'\b', title.lower()) or
-               re.search(r'\b' + re.escape(keyword.lower()) + r'\b', summary.lower()) for keyword in keywords):
-            keyword_article = Article(
+
+        keyword_article = Article(
                 title=title,
                 url=url,
                 summary=summary,
                 date=date,
-                keywords=', '.join(keywords),
                 source='Security Week',
                 image=image
             )
-            keyword_article.save_to_db()
-            keyword_articles.append(keyword_article)
+        keyword_article.save_to_db()
+        keyword_articles.append(keyword_article)
 
     return keyword_articles
 

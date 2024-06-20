@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Now you can import from app.models
 from app.models import Article
 
-def hackernews_scraper(keywords, max_pages=1):
+def hackernews_scraper(max_pages=1):
     # Setup Chrome options
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # Ensure GUI is off
@@ -38,7 +38,6 @@ def hackernews_scraper(keywords, max_pages=1):
             # Wait for the page to load
             time.sleep(3)
 
-            print("Finding articles...")
             # Find all links
             links = driver.find_elements(By.TAG_NAME, 'a')
 
@@ -46,22 +45,17 @@ def hackernews_scraper(keywords, max_pages=1):
                 title = link.text
                 url = link.get_attribute('href')
 
-                if url and any(re.search(r'\b' + re.escape(keyword) + r'\b', title, re.IGNORECASE) or
-                               re.search(r'\b' + re.escape(keyword) + r'\b', url, re.IGNORECASE)
-                               for keyword in keywords):
-                    article = Article(
+
+                article = Article(
                         title=title,
                         url=url,
                         summary="",  # No summary available from Hacker News
                         date="",  # No date available from Hacker News
-                        keywords=', '.join(keywords),
                         source='Hacker News',
                     )
-                    article.save_to_db()
-                    articles_data.append(article)
-                    print(f"Title: {title}")
-                    print(f"URL: {url}")
-                    print('-' * 80)
+                article.save_to_db()
+                articles_data.append(article)
+
 
     except Exception as e:
         print(f"An error occurred: {e}")

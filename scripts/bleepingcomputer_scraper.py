@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Now you can import from app.models
 from app.models import Article
 
-def bleepingcomputer_scraper(keywords):
+def bleepingcomputer_scraper():
     url = 'https://www.bleepingcomputer.com/news/security/'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -58,19 +58,17 @@ def bleepingcomputer_scraper(keywords):
             if not url.startswith('http'):
                 url = 'https://www.bleepingcomputer.com' + url
 
-            if any(re.search(r'\b' + re.escape(keyword.lower()) + r'\b', title.lower()) or
-                   re.search(r'\b' + re.escape(keyword.lower()) + r'\b', summary.lower()) for keyword in keywords):
-                keyword_article = Article(
+
+            keyword_article = Article(
                     title=title,
                     url=url,
                     summary=summary,
                     date=date,
-                    keywords=', '.join(keywords),
                     source='Bleeping Computer',
                     image=image
                 )
-                keyword_article.save_to_db()
-                keyword_articles.append(keyword_article)
+            keyword_article.save_to_db()
+            keyword_articles.append(keyword_article)
         except Exception as e:
             print(f"Error parsing article: {e}")
 

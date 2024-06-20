@@ -16,7 +16,7 @@ def contains_keyword(text, keywords):
             return True
     return False
 
-def infosecurity_scraper(keywords):
+def infosecurity_scraper():
     url = 'https://www.infosecurity-magazine.com/news/'
     response = requests.get(url)
     articles_data = []
@@ -52,18 +52,17 @@ def infosecurity_scraper(keywords):
                 if not link.startswith('http'):
                     link = 'https://www.infosecurity-magazine.com' + link
 
-                if contains_keyword(title, keywords) or contains_keyword(summary, keywords):
-                    keyword_article = Article(
+
+                keyword_article = Article(
                         title=title,
                         url=link,
                         summary=summary,
                         date=date,
-                        keywords=', '.join(keywords),
                         source='Info Security',
                         image=image
                     )
-                    keyword_article.save_to_db()
-                    articles_data.append(keyword_article)
+                keyword_article.save_to_db()
+                articles_data.append(keyword_article)
 
     return articles_data
 

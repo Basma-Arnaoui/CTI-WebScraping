@@ -64,63 +64,72 @@
             padding: 5px;
             text-decoration: underline;
         }
-        .sidebar {
+        .nav-sidebar {
             position: fixed;
-            left: 0;
             top: 0;
-            bottom: 0;
+            left: 0;
             width: 200px;
-            background-color: #f8f9fa;
-            padding: 20px;
+            height: 100%;
             border-right: 1px solid #ddd;
+            padding: 20px;
+            background-color: #f8f9fa;
         }
-        .sidebar a {
-            display: block;
-            padding: 10px;
+        .nav-sidebar .nav-link.active {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .nav-sidebar .nav-link {
             margin-bottom: 10px;
         }
-        .keyword-input-group {
+        .content {
+            margin-left: 220px;
+        }
+        .keywords-container {
             margin-bottom: 20px;
         }
-        .keyword-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .keyword-list li {
-            background: #007bff;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            margin-right: 5px;
+        .keyword-item {
             display: inline-block;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            padding: 5px;
+            margin-right: 5px;
+            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h4>Filters</h4>
-        <div class="keyword-input-group">
-            <input type="text" id="keyword-input" class="form-control" placeholder="Enter keyword">
-            <button id="add-keyword-btn" class="btn btn-primary mt-2">Add Keyword</button>
-        </div>
-        <ul id="keyword-list" class="keyword-list">
-            {% for keyword in current_keywords %}
-            <li>{{ keyword }}</li>
-            {% endfor %}
-        </ul>
-        <form action="/filter" method="post">
-            <input type="hidden" id="keywords-input" name="keywords" value="{{ ','.join(current_keywords) }}">
-            <button type="submit" class="btn btn-black">Filter</button>
+    <div class="nav-sidebar">
+        <h3>Sources</h3>
+        <a href="/filter?source=All&keywords={{ ','.join(keywords) }}" class="nav-link {% if not current_filter or current_filter == 'All' %}active{% endif %}">All</a>
+        <a href="/filter?source=Bleeping%20Computer&keywords={{ ','.join(keywords) }}" class="nav-link {% if current_filter == 'Bleeping Computer' %}active{% endif %}">Bleeping Computer</a>
+        <a href="/filter?source=The%20Hacker%20News&keywords={{ ','.join(keywords) }}" class="nav-link {% if current_filter == 'The Hacker News' %}active{% endif %}">The Hacker News</a>
+        <a href="/filter?source=Hacker%20News&keywords={{ ','.join(keywords) }}" class="nav-link {% if current_filter == 'Hacker News' %}active{% endif %}">Hacker News</a>
+        <a href="/filter?source=Security%20Week&keywords={{ ','.join(keywords) }}" class="nav-link {% if current_filter == 'Security Week' %}active{% endif %}">Security Week</a>
+        <a href="/filter?source=Info%20Security&keywords={{ ','.join(keywords) }}" class="nav-link {% if current_filter == 'Info Security' %}active{% endif %}">Info Security</a>
+        <form id="clear-filters-form" action="/clear_filters" method="post">
+            <input type="hidden" name="current_filter" value="{{ current_filter }}">
+            <button type="submit" class="btn btn-danger mt-3">Clear Filters</button>
         </form>
-        <a href="/" class="btn {% if current_filter == 'All' or not current_filter %}btn-primary{% else %}btn-secondary{% endif %} mt-2">All</a>
-        <a href="/filter?source=Bleeping%20Computer" class="btn {% if current_filter == 'Bleeping Computer' %}btn-primary{% else %}btn-secondary{% endif %} mt-2">Bleeping Computer</a>
-        <a href="/filter?source=The%20Hacker%20News" class="btn {% if current_filter == 'The Hacker News' %}btn-primary{% else %}btn-secondary{% endif %} mt-2">The Hacker News</a>
-        <a href="/filter?source=Hacker%20News" class="btn {% if current_filter == 'Hacker News' %}btn-primary{% else %}btn-secondary{% endif %} mt-2">Hacker News</a>
-        <a href="/filter?source=Security%20Week" class="btn {% if current_filter == 'Security Week' %}btn-primary{% else %}btn-secondary{% endif %} mt-2">Security Week</a>
-        <a href="/filter?source=Info%20Security" class="btn {% if current_filter == 'Info Security' %}btn-primary{% else %}btn-secondary{% endif %} mt-2">Info Security</a>
     </div>
-    <div class="container mt-4" style="margin-left: 220px;">
+    <div class="container content mt-4">
         <h1>CTI News Dashboard</h1>
+        <form id="filter-form" action="/filter" method="post">
+            <div class="form-group">
+                <input type="text" id="keyword-input" class="form-control" placeholder="Enter keyword and press Enter">
+                <button type="button" id="add-keyword-btn" class="btn btn-primary mt-2">Add Keyword</button>
+            </div>
+            <div class="keywords-container">
+                <input type="hidden" name="keywords" id="keywords-input" value="{{ ','.join(keywords) if keywords else '' }}">
+                <input type="hidden" name="source" value="{{ current_filter }}">
+                <div id="keywords-list">
+                    {% for keyword in keywords %}
+                    <span class="keyword-item">{{ keyword }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
         <div class="row mt-4">
             <div class="col-12">
                 {% for article in articles %}
@@ -140,22 +149,33 @@
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const addKeywordBtn = document.getElementById('add-keyword-btn');
             const keywordInput = document.getElementById('keyword-input');
-            const keywordList = document.getElementById('keyword-list');
+            const keywordsList = document.getElementById('keywords-list');
             const keywordsInput = document.getElementById('keywords-input');
+            const addKeywordBtn = document.getElementById('add-keyword-btn');
+            let keywords = keywordsInput.value ? keywordsInput.value.split(',') : [];
+
+            function addKeyword(keyword) {
+                if (keyword && !keywords.includes(keyword)) {
+                    keywords.push(keyword);
+                    const keywordItem = document.createElement('span');
+                    keywordItem.className = 'keyword-item';
+                    keywordItem.textContent = keyword;
+                    keywordsList.appendChild(keywordItem);
+                    keywordsInput.value = keywords.join(',');
+                    keywordInput.value = '';
+                }
+            }
+
+            keywordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    addKeyword(keywordInput.value.trim());
+                }
+            });
 
             addKeywordBtn.addEventListener('click', function() {
-                const keyword = keywordInput.value.trim();
-                if (keyword) {
-                    const li = document.createElement('li');
-                    li.textContent = keyword;
-                    keywordList.appendChild(li);
-                    keywordInput.value = '';
-
-                    const keywords = Array.from(keywordList.children).map(li => li.textContent);
-                    keywordsInput.value = keywords.join(',');
-                }
+                addKeyword(keywordInput.value.trim());
             });
 
             document.querySelectorAll('.read-more-link').forEach(function(link) {

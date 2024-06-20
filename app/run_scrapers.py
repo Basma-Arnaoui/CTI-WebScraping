@@ -6,12 +6,12 @@ from scripts.infosecurity_scraper import infosecurity_scraper
 from scripts.securityweek_scraper import securityweek_scraper
 from scripts.thehackernews import thehackernews_scraper
 
-def run_all_scrapers(keywords):
-    bleepingcomputer_articles = bleepingcomputer_scraper(keywords)
-    hackernews_articles = hackernews_scraper(keywords)
-    infosecurity_articles = infosecurity_scraper(keywords)
-    securityweek_articles = securityweek_scraper(keywords)
-    thehackernews_articles = thehackernews_scraper(keywords)
+def run_all_scrapers():
+    bleepingcomputer_articles = bleepingcomputer_scraper()
+    hackernews_articles = hackernews_scraper()
+    infosecurity_articles = infosecurity_scraper()
+    securityweek_articles = securityweek_scraper()
+    thehackernews_articles = thehackernews_scraper()
 
     print(f"Bleeping Computer: {len(bleepingcomputer_articles)} articles fetched")
     print(f"Hacker News: {len(hackernews_articles)} articles fetched")
