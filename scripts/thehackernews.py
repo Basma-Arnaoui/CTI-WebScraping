@@ -26,6 +26,9 @@ def thehackernews_scraper(keywords):
         date = entry.published
         summary = BeautifulSoup(entry.summary, "html.parser").get_text()
 
+        # Extract the image URL from the enclosure field
+        image = entry.enclosures[0]['url'] if 'enclosures' in entry and entry.enclosures else None
+
         # Check if any of the keywords are in the title or summary using regex
         if any(pattern.search(title) or pattern.search(summary) for pattern in keyword_patterns):
             keyword_article = Article(
@@ -34,7 +37,8 @@ def thehackernews_scraper(keywords):
                 summary=summary,
                 date=date,
                 keywords=', '.join(keywords),
-                source='The Hacker News'
+                source='The Hacker News',
+                image=image
             )
             keyword_articles.append(keyword_article)
             keyword_article.save_to_db()
@@ -42,6 +46,7 @@ def thehackernews_scraper(keywords):
             print(f"URL: {url}")
             print(f"Published: {date}")
             print(f"Summary: {summary}")
+            print(f"Image: {image}")
             print('-' * 80)
 
     print(f"Total articles found: {len(keyword_articles)}")
@@ -57,4 +62,5 @@ if __name__ == "__main__":
         print(f"Summary: {article_dict['summary']}")
         print(f"Date: {article_dict['date']}")
         print(f"Keywords: {article_dict['keywords']}")
+        print(f"Image: {article.image}")
         print("\n")

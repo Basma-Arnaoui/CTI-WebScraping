@@ -65,44 +65,61 @@
             text-decoration: underline;
         }
         .sidebar {
-            height: 100vh;
             position: fixed;
-            top: 0;
             left: 0;
-            width: 220px;
+            top: 0;
+            bottom: 0;
+            width: 200px;
             background-color: #f8f9fa;
-            padding-top: 20px;
+            padding: 20px;
             border-right: 1px solid #ddd;
         }
         .sidebar a {
             display: block;
-            padding: 10px 15px;
-            margin: 5px 0;
-            color: #333;
-            text-decoration: none;
+            padding: 10px;
+            margin-bottom: 10px;
         }
-        .sidebar a:hover, .sidebar a.active {
-            background-color: #007bff;
+        .keyword-input-group {
+            margin-bottom: 20px;
+        }
+        .keyword-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .keyword-list li {
+            background: #007bff;
             color: white;
+            padding: 5px 10px;
             border-radius: 5px;
-        }
-        .content {
-            margin-left: 240px;
-            padding: 20px;
+            margin-right: 5px;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h2>Sources</h2>
-        <a href="/" class="btn {% if current_filter == 'All' or not current_filter %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
-        <a href="/filter?source=Bleeping%20Computer" class="btn {% if current_filter == 'Bleeping Computer' %}btn-primary{% else %}btn-secondary{% endif %}">Bleeping Computer</a>
-        <a href="/filter?source=The%20Hacker%20News" class="btn {% if current_filter == 'The Hacker News' %}btn-primary{% else %}btn-secondary{% endif %}">The Hacker News</a>
-        <a href="/filter?source=Hacker%20News" class="btn {% if current_filter == 'Hacker News' %}btn-primary{% else %}btn-secondary{% endif %}">Hacker News</a>
-        <a href="/filter?source=Security%20Week" class="btn {% if current_filter == 'Security Week' %}btn-primary{% else %}btn-secondary{% endif %}">Security Week</a>
-        <a href="/filter?source=Info%20Security" class="btn {% if current_filter == 'Info Security' %}btn-primary{% else %}btn-secondary{% endif %}">Info Security</a>
+        <h4>Filters</h4>
+        <div class="keyword-input-group">
+            <input type="text" id="keyword-input" class="form-control" placeholder="Enter keyword">
+            <button id="add-keyword-btn" class="btn btn-primary mt-2">Add Keyword</button>
+        </div>
+        <ul id="keyword-list" class="keyword-list">
+            {% for keyword in current_keywords %}
+            <li>{{ keyword }}</li>
+            {% endfor %}
+        </ul>
+        <form action="/filter" method="post">
+            <input type="hidden" id="keywords-input" name="keywords" value="{{ ','.join(current_keywords) }}">
+            <button type="submit" class="btn btn-black">Filter</button>
+        </form>
+        <a href="/" class="btn {% if current_filter == 'All' or not current_filter %}btn-primary{% else %}btn-secondary{% endif %} mt-2">All</a>
+        <a href="/filter?source=Bleeping%20Computer" class="btn {% if current_filter == 'Bleeping Computer' %}btn-primary{% else %}btn-secondary{% endif %} mt-2">Bleeping Computer</a>
+        <a href="/filter?source=The%20Hacker%20News" class="btn {% if current_filter == 'The Hacker News' %}btn-primary{% else %}btn-secondary{% endif %} mt-2">The Hacker News</a>
+        <a href="/filter?source=Hacker%20News" class="btn {% if current_filter == 'Hacker News' %}btn-primary{% else %}btn-secondary{% endif %} mt-2">Hacker News</a>
+        <a href="/filter?source=Security%20Week" class="btn {% if current_filter == 'Security Week' %}btn-primary{% else %}btn-secondary{% endif %} mt-2">Security Week</a>
+        <a href="/filter?source=Info%20Security" class="btn {% if current_filter == 'Info Security' %}btn-primary{% else %}btn-secondary{% endif %} mt-2">Info Security</a>
     </div>
-    <div class="content">
+    <div class="container mt-4" style="margin-left: 220px;">
         <h1>CTI News Dashboard</h1>
         <div class="row mt-4">
             <div class="col-12">
@@ -123,6 +140,24 @@
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            const addKeywordBtn = document.getElementById('add-keyword-btn');
+            const keywordInput = document.getElementById('keyword-input');
+            const keywordList = document.getElementById('keyword-list');
+            const keywordsInput = document.getElementById('keywords-input');
+
+            addKeywordBtn.addEventListener('click', function() {
+                const keyword = keywordInput.value.trim();
+                if (keyword) {
+                    const li = document.createElement('li');
+                    li.textContent = keyword;
+                    keywordList.appendChild(li);
+                    keywordInput.value = '';
+
+                    const keywords = Array.from(keywordList.children).map(li => li.textContent);
+                    keywordsInput.value = keywords.join(',');
+                }
+            });
+
             document.querySelectorAll('.read-more-link').forEach(function(link) {
                 link.addEventListener('click', function() {
                     let articleContainer = this.closest('.article-container');

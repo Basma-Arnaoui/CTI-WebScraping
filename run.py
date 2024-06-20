@@ -6,7 +6,6 @@ from app.run_scrapers import  run_all_scrapers
 
 # Initialize the database
 initialize_db()
-run_all_scrapers()
 
 # Start the Flask app
 if __name__ == "__main__":

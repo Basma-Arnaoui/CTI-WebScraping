@@ -51,10 +51,6 @@ def bleepingcomputer_scraper(keywords):
             else:
                 image = None
 
-            # Print the image element and its src attribute for debugging
-            print(f"Image Element: {image_element}")
-            print(f"Image Source: {image}")
-
             # Absolute URL for the image if it's relative
             if image and not image.startswith('http'):
                 image = 'https://www.bleepingcomputer.com' + image

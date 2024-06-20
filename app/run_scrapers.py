@@ -6,10 +6,7 @@ from scripts.infosecurity_scraper import infosecurity_scraper
 from scripts.securityweek_scraper import securityweek_scraper
 from scripts.thehackernews import thehackernews_scraper
 
-def run_all_scrapers():
-    keywords = ["cti", "data", "cyber", "ai", "machine", "ransomware", "spyware", "vulnerability"]
-
-    # Fetch articles from all scrapers
+def run_all_scrapers(keywords):
     bleepingcomputer_articles = bleepingcomputer_scraper(keywords)
     hackernews_articles = hackernews_scraper(keywords)
     infosecurity_articles = infosecurity_scraper(keywords)
@@ -23,4 +20,9 @@ def run_all_scrapers():
     print(f"The Hacker News: {len(thehackernews_articles)} articles fetched")
 
 if __name__ == "__main__":
-    run_all_scrapers()
+    import sys
+    if len(sys.argv) > 1:
+        keywords = sys.argv[1].split(',')
+    else:
+        keywords = ["cti", "data", "cyber", "ai", "machine", "ransomware", "spyware", "vulnerability"]
+    run_all_scrapers(keywords)
