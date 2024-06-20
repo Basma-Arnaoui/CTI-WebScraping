@@ -10,7 +10,7 @@ def get_trending_cves(num_results, metric):
 
     # NVD 2.0 API URL
     URL = f'https://services.nvd.nist.gov/rest/json/cves/2.0/?pubStartDate={start_date}T00:00:00.000Z&pubEndDate={end_date}T00:00:00.000Z'
-    print(URL)
+
     # Send a request to the URL
     response = requests.get(URL)
     response.raise_for_status()
@@ -26,27 +26,49 @@ def get_trending_cves(num_results, metric):
     # Extract CVE items
     cve_items = cve_data.get('vulnerabilities', [])
 
-    # Define a function to get the score based on the chosen metric
-    def get_score(cve, metric):
-        try:
-            return cve['cve']['metrics']['cvssMetricV31'][0][metric]
-        except (KeyError, IndexError):
-            return 0
-
-    # Sort CVEs based on the chosen metric
-    cve_items.sort(key=lambda x: get_score(x, metric), reverse=True)
-
-    # Get the top X trending CVEs
-    top_cves = cve_items[:num_results]
-
-    return top_cves
-
-# Function to display the CVEs
-def display_cves(cves):
-    for cve in cves:
+    # Create a map for each CVE containing ID, description, and scores
+    cve_map = {}
+    for cve in cve_items:
         cve_id = cve['cve']['id']
         description = cve['cve']['descriptions'][0]['value']
+        metrics_v30 = cve['cve']['metrics'].get('cvssMetricV30', [])
+        metrics_v31 = cve['cve']['metrics'].get('cvssMetricV31', [])
+
+        metrics = metrics_v30 + metrics_v31
+        scores = {}
+
+        if metrics:
+            for metric_data in metrics:
+                scores['baseScore'] = metric_data['cvssData']['baseScore']
+                scores['exploitabilityScore'] = metric_data.get('exploitabilityScore', '0')  # Change 'Score not available' to '0'
+                scores['impactScore'] = metric_data.get('impactScore', '0')  # Change 'Score not available' to '0'
+        else:
+            scores = {'baseScore': '0', 'exploitabilityScore': '0', 'impactScore': '0'}  # Change 'Score not available' to '0'
+
+        cve_map[cve_id] = {'description': description, 'scores': scores}
+
+    # Sort CVEs based on the chosen metric
+    sorted_cves = sorted(cve_map.items(), key=lambda x: float(x[1]['scores'].get(metric, '0')), reverse=True)  # Change 'Score not available' to '0'
+
+    # Get the top X trending CVEs
+    top_cves = [cve[1] for cve in sorted_cves[:num_results]]
+    return top_cves
+
+
+# Function to display the CVEs with all three scores
+def display_cves(cves):
+    for cve_data in cves:
+        cve_id = cve_data['description']
+        description = cve_data['description']
+        base_score = cve_data['scores']['baseScore']
+        exploitability_score = cve_data['scores']['exploitabilityScore']
+        impact_score = cve_data['scores']['impactScore']
+
         print(f"{cve_id}: {description}")
+        print(f"Base Score: {base_score}")
+        print(f"Exploitability Score: {exploitability_score}")
+        print(f"Impact Score: {impact_score}\n")
+
 
 # Main function
 def main():
