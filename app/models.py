@@ -1,7 +1,8 @@
 import sqlite3
 import os
 
-DATABASE = os.path.join(os.path.dirname(__file__), '..', 'database.db')
+ARTICLES_DATABASE = os.path.join(os.path.dirname(__file__), '..', 'articles.db')
+CVE_DATABASE = os.path.join(os.path.dirname(__file__), '..', 'cve.db')
 
 class Article:
     def __init__(self, title, url, summary, date, source, image=None):
@@ -14,7 +15,7 @@ class Article:
 
     @classmethod
     def fetch_from_db(cls, source=None, keywords=[]):
-        conn = sqlite3.connect(DATABASE)
+        conn = sqlite3.connect(ARTICLES_DATABASE)
         query = 'SELECT title, url, summary, date, source, image FROM articles'
         params = []
 
@@ -40,7 +41,7 @@ class Article:
         return articles
 
     def save_to_db(self):
-        conn = sqlite3.connect(DATABASE)
+        conn = sqlite3.connect(ARTICLES_DATABASE)
         conn.execute(
             'INSERT INTO articles (title, url, summary, date, source, image) VALUES (?, ?, ?, ?, ?, ?)',
             (self.title, self.url, self.summary, self.date, self.source, self.image)
@@ -49,7 +50,7 @@ class Article:
         conn.close()
 
 def initialize_db():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(ARTICLES_DATABASE)
     conn.execute('''
         CREATE TABLE IF NOT EXISTS articles (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,7 +65,7 @@ def initialize_db():
     conn.close()
 
 def initialize_cve_db():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(CVE_DATABASE)
     conn.execute('''
         CREATE TABLE IF NOT EXISTS cves (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,4 +82,28 @@ def initialize_cve_db():
             score TEXT
         )
     ''')
+    conn.close()
+
+def get_db_connection():
+    conn = sqlite3.connect(ARTICLES_DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def get_cve_db_connection():
+    conn = sqlite3.connect(CVE_DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+def insert_cve_data(cve_data):
+    conn = sqlite3.connect(CVE_DATABASE)
+    cursor = conn.cursor()
+    for cve in cve_data:
+        cursor.execute('''
+            INSERT INTO cves (cve_id, vendor_project, product, vulnerability_name, date_added, short_description, required_action, due_date, known_ransomware_campaign_use, notes, score)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            cve["CVE ID"], cve["Vendor Project"], cve["Product"], cve["Vulnerability Name"],
+            cve["Date Added"], cve["Short Description"], cve["Required Action"], cve["Due Date"],
+            cve["Known Ransomware Campaign Use"], cve["Notes"], "None"  # Store "None" as a string initially
+        ))
+    conn.commit()
     conn.close()

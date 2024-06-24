@@ -5,98 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CTI News Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .article-container {
-            display: flex;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .article-image {
-            flex: 0 0 150px;
-            height: 150px;
-            object-fit: cover;
-            margin-right: 15px;
-        }
-        .article-content {
-            flex: 1;
-        }
-        .article-title {
-            font-size: 1.25rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .article-summary {
-            max-height: 60px;
-            overflow: hidden;
-            position: relative;
-            line-height: 1.5;
-        }
-        .article-summary::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 100%;
-            height: 1.25em;
-            background: linear-gradient(to top, white, rgba(255, 255, 255, 0));
-        }
-        .read-more-link {
-            color: blue;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        .article-container.expanded .article-summary {
-            max-height: none;
-        }
-        .article-container.expanded .article-summary::after {
-            display: none;
-        }
-        .article-container.expanded .read-more-link {
-            display: none;
-        }
-        .full {
-            background-color: #007bff;
-            color: white;
-            border-radius: 5px;
-            padding: 5px;
-            text-decoration: underline;
-        }
-        .nav-sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 200px;
-            height: 100%;
-            border-right: 1px solid #ddd;
-            padding: 20px;
-            background-color: #f8f9fa;
-        }
-        .nav-sidebar .nav-link.active {
-            font-weight: bold;
-            color: #007bff;
-        }
-        .nav-sidebar .nav-link {
-            margin-bottom: 10px;
-        }
-        .content {
-            margin-left: 220px;
-        }
-        .keywords-container {
-            margin-bottom: 20px;
-        }
-        .keyword-item {
-            display: inline-block;
-            background-color: #007bff;
-            color: white;
-            border-radius: 5px;
-            padding: 5px;
-            margin-right: 5px;
-            margin-bottom: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="nav-sidebar">
@@ -104,9 +13,10 @@
         <a href="/filter?source=All&keywords={{ ','.join(keywords) }}" class="nav-link {% if not current_filter or current_filter == 'All' %}active{% endif %}">All</a>
         <a href="/filter?source=Bleeping%20Computer&keywords={{ ','.join(keywords) }}" class="nav-link {% if current_filter == 'Bleeping Computer' %}active{% endif %}">Bleeping Computer</a>
         <a href="/filter?source=The%20Hacker%20News&keywords={{ ','.join(keywords) }}" class="nav-link {% if current_filter == 'The Hacker News' %}active{% endif %}">The Hacker News</a>
-        <a href="/filter?source=Hacker%20News&keywords={{ ','.join(keywords) }}" class="nav-link {% if current_filter == 'Hacker News' %}active{% endif %}">Hacker News</a>
         <a href="/filter?source=Security%20Week&keywords={{ ','.join(keywords) }}" class="nav-link {% if current_filter == 'Security Week' %}active{% endif %}">Security Week</a>
         <a href="/filter?source=Info%20Security&keywords={{ ','.join(keywords) }}" class="nav-link {% if current_filter == 'Info Security' %}active{% endif %}">Info Security</a>
+        <a href="/filter?source=Born%20City&keywords={{ ','.join(keywords) }}" class="nav-link {% if current_filter == 'Born City' %}active{% endif %}">Born City</a>
+
         <form id="clear-filters-form" action="/clear_filters" method="post">
             <input type="hidden" name="current_filter" value="{{ current_filter }}">
             <button type="submit" class="btn btn-danger mt-3">Clear Filters</button>
@@ -114,12 +24,61 @@
     </div>
     <div class="container content mt-4">
         <h1>CTI News Dashboard</h1>
+
+        <!-- CVEs Section -->
+        <h2>Top 5 CVEs</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>CVE ID</th>
+                    <th>Details</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cve in cves %}
+                <tr>
+                    <td>{{ cve['cve_id'] }}</td>
+                    <td class="details">
+                        <div class="title">{{ cve['vulnerability_name'] }}</div>
+                        <div>{{ cve['short_description'] }}</div>
+                        <a href="{{ cve['nvd_link'] }}" target="_blank" class="nvd-link">NVD Link</a>
+                    </td>
+                    <td class="score">
+                        {% if 'HIGH' in cve['score'] %}
+                        <span class="severity-high">{{ cve['score'] }}</span>
+                        {% elif 'MEDIUM' in cve['score'] %}
+                        <span class="severity-medium">{{ cve['score'] }}</span>
+                        {% elif 'LOW' in cve['score'] %}
+                        <span class="severity-low">{{ cve['score'] }}</span>
+                        {% elif 'CRITICAL' in cve['score'] %}
+                        <span class="severity-critical">{{ cve['score'] }}</span>
+                        {% else %}
+                        <span>{{ cve['score'] }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination for CVEs -->
+        <div class="pagination">
+            {% if page > 1 %}
+            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page-1) }}">Previous</a>
+            {% endif %}
+            {% if page < total_pages %}
+            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page+1) }}">Next</a>
+            {% endif %}
+        </div>
+
+        <!-- Keyword Search Form -->
         <form id="filter-form" action="/filter" method="post">
-            <div class="form-group">
+            <div class="form-group d-flex">
                 <input type="text" id="keyword-input" class="form-control" placeholder="Enter keyword and press Enter">
-                <button type="button" id="add-keyword-btn" class="btn btn-primary mt-2">Add Keyword</button>
+                <button type="button" id="add-keyword-btn" class="btn btn-primary ml-2">Add Keyword</button>
             </div>
-            <div class="keywords-container">
+            <div class="keywords-container mb-3">
                 <input type="hidden" name="keywords" id="keywords-input" value="{{ ','.join(keywords) if keywords else '' }}">
                 <input type="hidden" name="source" value="{{ current_filter }}">
                 <div id="keywords-list">
@@ -130,11 +89,12 @@
             </div>
             <button type="submit" class="btn btn-primary">Filter</button>
         </form>
+
         <div class="row mt-4">
             <div class="col-12">
                 {% for article in articles %}
                 <div class="article-container">
-                    <img src="{{ article.image }}" alt="Article Image" class="article-image">
+                    <img src="{{ article.image }}" alt="Article Image" class="article-image" style="width: 170px;">
                     <div class="article-content">
                         <div class="article-title">{{ article.title }}</div>
                         <div class="article-summary">{{ article.summary }}</div>
@@ -145,6 +105,16 @@
                 </div>
                 {% endfor %}
             </div>
+        </div>
+
+        <!-- Pagination for Articles -->
+        <div class="pagination">
+            {% if page > 1 %}
+            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page-1) }}">Previous</a>
+            {% endif %}
+            {% if page < total_pages %}
+            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page+1) }}">Next</a>
+            {% endif %}
         </div>
     </div>
     <script>
@@ -164,7 +134,21 @@
                     keywordsList.appendChild(keywordItem);
                     keywordsInput.value = keywords.join(',');
                     keywordInput.value = '';
+                    keywordItem.addEventListener('click', function() {
+                        removeKeyword(keywordItem.textContent);
+                    });
                 }
+            }
+
+            function removeKeyword(keyword) {
+                keywords = keywords.filter(k => k !== keyword);
+                keywordsInput.value = keywords.join(',');
+                const keywordItems = Array.from(document.getElementsByClassName('keyword-item'));
+                keywordItems.forEach(item => {
+                    if (item.textContent === keyword) {
+                        keywordsList.removeChild(item);
+                    }
+                });
             }
 
             keywordInput.addEventListener('keypress', function(event) {
@@ -176,6 +160,12 @@
 
             addKeywordBtn.addEventListener('click', function() {
                 addKeyword(keywordInput.value.trim());
+            });
+
+            document.querySelectorAll('.keyword-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    removeKeyword(item.textContent);
+                });
             });
 
             document.querySelectorAll('.read-more-link').forEach(function(link) {

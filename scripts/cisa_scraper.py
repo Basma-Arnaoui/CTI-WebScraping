@@ -76,13 +76,5 @@ def get_cvss_score(cve_id):
 if __name__ == "__main__":
     cve_list = scrape_cisa_known_exploited_vulnerabilities()
     no_score_count = 0
-
-    for i, cve in enumerate(cve_list[:100]):
-        cve_id = cve['CVE ID']
-        score = get_cvss_score(cve_id)
-        if score == "Score not found":
-            no_score_count += 1
-        print(f"CVE ID: {cve_id}, Score: {score}")
-
-    print(f"\nTotal CVEs checked: {min(100, len(cve_list))}")
-    print(f"Number of CVEs without a score: {no_score_count}")
+    print(cve_list[-1]['CVE ID'])
+    print(get_cvss_score(cve_list[-1]['CVE ID']))

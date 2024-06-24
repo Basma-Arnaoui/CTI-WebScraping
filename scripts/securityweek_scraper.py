@@ -35,7 +35,7 @@ def securityweek_scraper():
                 summary=summary,
                 date=date,
                 source='Security Week',
-                image=image
+                image="https://media.licdn.com/dms/image/C4E0BAQH2tHghiPJr0g/company-logo_200_200/0/1675885800622/securityweek_logo?e=2147483647&v=beta&t=OugMo88yYehO7RT_M3Xu3vD-_X_7u-Md3GPbm0bZ8Rc"
             )
         keyword_article.save_to_db()
         keyword_articles.append(keyword_article)

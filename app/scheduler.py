@@ -8,6 +8,9 @@ def clear_db():
     with closing(sqlite3.connect('articles.db')) as conn:
         with conn:
             conn.execute('DELETE FROM articles')
+    with closing(sqlite3.connect('cve.db')) as conn:
+        with conn:
+            conn.execute('DELETE FROM cves')
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
