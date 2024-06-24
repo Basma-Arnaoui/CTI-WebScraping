@@ -10,7 +10,7 @@ def get_trending_cves(num_results, metric):
 
     # NVD 2.0 API URL
     URL = f'https://services.nvd.nist.gov/rest/json/cves/2.0/?pubStartDate={start_date}T00:00:00.000Z&pubEndDate={end_date}T00:00:00.000Z'
-
+    print(URL)
     # Send a request to the URL
     response = requests.get(URL)
     response.raise_for_status()
@@ -25,8 +25,6 @@ def get_trending_cves(num_results, metric):
 
     # Extract CVE items
     cve_items = cve_data.get('vulnerabilities', [])
-
-    # Create a map for each CVE containing ID, description, and scores
     cve_map = {}
     for cve in cve_items:
         cve_id = cve['cve']['id']
@@ -40,14 +38,13 @@ def get_trending_cves(num_results, metric):
         if metrics:
             for metric_data in metrics:
                 scores['baseScore'] = metric_data['cvssData']['baseScore']
-                scores['exploitabilityScore'] = metric_data.get('exploitabilityScore', '0')  # Change 'Score not available' to '0'
-                scores['impactScore'] = metric_data.get('impactScore', '0')  # Change 'Score not available' to '0'
+                scores['exploitabilityScore'] = metric_data.get('exploitabilityScore', '0')
+                scores['impactScore'] = metric_data.get('impactScore', '0')
         else:
-            scores = {'baseScore': '0', 'exploitabilityScore': '0', 'impactScore': '0'}  # Change 'Score not available' to '0'
+            scores = {'baseScore': '0', 'exploitabilityScore': '0', 'impactScore': '0'} 
 
         cve_map[cve_id] = {'description': description, 'scores': scores}
 
-    # Sort CVEs based on the chosen metric
     sorted_cves = sorted(cve_map.items(), key=lambda x: float(x[1]['scores'].get(metric, '0')), reverse=True)  # Change 'Score not available' to '0'
 
     # Get the top X trending CVEs

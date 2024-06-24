@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-DATABASE = os.path.join(os.path.dirname(__file__), '..', 'articles.db')
+DATABASE = os.path.join(os.path.dirname(__file__), '..', 'database.db')
 
 class Article:
     def __init__(self, title, url, summary, date, source, image=None):
@@ -59,6 +59,26 @@ def initialize_db():
             date TEXT,
             source TEXT,
             image TEXT
+        )
+    ''')
+    conn.close()
+
+def initialize_cve_db():
+    conn = sqlite3.connect(DATABASE)
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS cves (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cve_id TEXT,
+            vendor_project TEXT,
+            product TEXT,
+            vulnerability_name TEXT,
+            date_added TEXT,
+            short_description TEXT,
+            required_action TEXT,
+            due_date TEXT,
+            known_ransomware_campaign_use TEXT,
+            notes TEXT,
+            score TEXT
         )
     ''')
     conn.close()

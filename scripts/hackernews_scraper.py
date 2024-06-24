@@ -17,7 +17,7 @@ from app.models import Article
 def hackernews_scraper(max_pages=1):
     # Setup Chrome options
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Ensure GUI is off
+    chrome_options.add_argument("--headless")  # E   nsure GUI is off
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
 
