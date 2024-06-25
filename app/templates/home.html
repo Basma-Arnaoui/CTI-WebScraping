@@ -80,7 +80,7 @@
         </div>
 
         <!-- Chart Section -->
-        <canvas id="severityChart" width="400" height="200"></canvas>
+        <canvas id="severityChart" width="50" height="50"></canvas>
 
         <!-- Keyword Search Form -->
         <form id="filter-form" action="/filter" method="post">
@@ -197,11 +197,11 @@
                     label: 'Severity Distribution in 2024',
                     data: Object.values(severityCounts),
                     backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(255, 159, 64, 0.2)',
-                        'rgba(255, 205, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(201, 203, 207, 0.2)'
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(255, 159, 64, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(201, 203, 207, 0.8)'
                     ],
                     borderColor: [
                         'rgb(255, 99, 132)',
@@ -210,7 +210,9 @@
                         'rgb(75, 192, 192)',
                         'rgb(201, 203, 207)'
                     ],
-                    borderWidth: 1
+                    borderWidth: 1,
+                    barPercentage: 0.5,  // Adjust this value to make bars skinnier
+                    categoryPercentage: 0.5
                 }]
             };
 
@@ -218,6 +220,8 @@
                 type: 'bar',
                 data: data,
                 options: {
+                maintainAspectRatio: true,  // Add this line
+                aspectRatio: 3,
                     scales: {
                         y: {
                             beginAtZero: true
