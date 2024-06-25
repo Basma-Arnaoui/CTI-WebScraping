@@ -25,8 +25,10 @@ def filter_by_keywords(page=1):
     per_page = 5
     offset = (page - 1) * per_page
 
+    sort_order = request.args.get('sort', 'date')
+
     # Fetch all CVEs and sort them
-    sorted_cves = get_sorted_cves()
+    sorted_cves = get_sorted_cves(sort_order)
 
     # Paginate the sorted CVEs
     paginated_cves = sorted_cves[offset:offset + per_page]
@@ -41,7 +43,8 @@ def filter_by_keywords(page=1):
     total_pages = (total_cves + per_page - 1) // per_page
 
     return render_template('home.html', articles=articles, current_filter=source, keywords=keywords, cves=updated_cves,
-                           page=page, total_pages=total_pages)
+                           page=page, total_pages=total_pages, sort_order=sort_order)
+
 
 
 @app.route('/clear_filters', methods=['POST'])

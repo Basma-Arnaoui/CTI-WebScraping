@@ -159,6 +159,9 @@ body {
 .severity-critical {
     background-color: #c9302c;
 }
+.severity-unknown {
+    background-color: grey;
+}
 
 #filter-form {
     margin-bottom: 30px;
@@ -218,3 +221,26 @@ body {
     background-color: #007bff;
     color: white;
 }
+.sorting-options {
+    margin-bottom: 20px;
+    text-align: right;
+}
+
+.sorting-options .btn {
+    margin-left: 10px;
+}
+
+.keyword-item {
+    color: black;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    text-decoration:underline;
+}
+
+.keyword-item:hover {
+    background-color: #0056b3;
+}
+

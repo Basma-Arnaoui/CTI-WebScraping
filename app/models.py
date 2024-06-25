@@ -109,16 +109,25 @@ def insert_cve_data(cve_data):
     conn.close()
 
 
-def get_sorted_cves():
+def get_sorted_cves(sort_order='date'):
     conn = get_cve_db_connection()
-    cves = conn.execute('SELECT * FROM cves').fetchall()
-    conn.close()
+    if sort_order == 'severity':
+        cves = conn.execute(
+            'SELECT * FROM cves WHERE cve_id LIKE "CVE-2024-%" ORDER BY CAST(SUBSTR(score, 1, INSTR(score, " ")) AS FLOAT) DESC'
+        ).fetchall()
+        conn.close()
+        return cves
+    else:
+        cves = conn.execute('SELECT * FROM cves').fetchall()
+        conn.close()
 
-    def sort_key(cve):
-        parts = cve['cve_id'].split('-')
-        year = int(parts[1])
-        seq_num = int(parts[2])
-        return (year, seq_num)
+        def sort_key(cve):
+            parts = cve['cve_id'].split('-')
+            year = int(parts[1])
+            seq_num = int(parts[2])
+            return (year, seq_num)
 
-    sorted_cves = sorted(cves, key=sort_key, reverse=True)
-    return sorted_cves
+        sorted_cves = sorted(cves, key=sort_key, reverse=True)
+        return sorted_cves
+
+

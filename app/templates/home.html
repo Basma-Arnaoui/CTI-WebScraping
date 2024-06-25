@@ -25,6 +25,12 @@
     <div class="container content mt-4">
         <h1>CTI News Dashboard</h1>
 
+        <!-- Sorting Options -->
+        <div class="sorting-options mb-3">
+            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), sort='date', page=1) }}" class="btn btn-secondary {% if sort_order == 'date' %}active{% endif %}">Sort by Date</a>
+            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), sort='severity', page=1) }}" class="btn btn-secondary {% if sort_order == 'severity' %}active{% endif %}">Sort by Severity</a>
+        </div>
+
         <!-- CVEs Section -->
         <h2>Top 5 CVEs</h2>
         <table class="table table-bordered">
@@ -54,7 +60,7 @@
                         {% elif 'CRITICAL' in cve['score'] %}
                         <span class="severity-critical">{{ cve['score'] }}</span>
                         {% else %}
-                        <span>{{ cve['score'] }}</span>
+                        <span class="severity-unknown">{{ cve['score'] }}</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -65,10 +71,10 @@
         <!-- Pagination for CVEs -->
         <div class="pagination">
             {% if page > 1 %}
-            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page-1) }}">Previous</a>
+            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page-1, sort=sort_order) }}">Previous</a>
             {% endif %}
             {% if page < total_pages %}
-            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page+1) }}">Next</a>
+            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page+1, sort=sort_order) }}">Next</a>
             {% endif %}
         </div>
 
@@ -110,10 +116,10 @@
         <!-- Pagination for Articles -->
         <div class="pagination">
             {% if page > 1 %}
-            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page-1) }}">Previous</a>
+            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page-1, sort=sort_order) }}">Previous</a>
             {% endif %}
             {% if page < total_pages %}
-            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page+1) }}">Next</a>
+            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page+1, sort=sort_order) }}">Next</a>
             {% endif %}
         </div>
     </div>
