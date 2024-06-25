@@ -20,8 +20,8 @@ def update_cve_scores():
     #insert_cve_data(data)
     cursor.execute('SELECT cve_id FROM cves')
     cves = cursor.fetchall()
-    i=599
-    for cve in cves[600:1000]:
+    i=999
+    for cve in cves[1000:]:
         cve_id = cve['cve_id']
         score = get_cvss_score(cve_id)
         cursor.execute('UPDATE cves SET score = ? WHERE cve_id = ?', (score, cve_id))

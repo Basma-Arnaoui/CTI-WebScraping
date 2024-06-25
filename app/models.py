@@ -107,3 +107,18 @@ def insert_cve_data(cve_data):
         ))
     conn.commit()
     conn.close()
+
+
+def get_sorted_cves():
+    conn = get_cve_db_connection()
+    cves = conn.execute('SELECT * FROM cves').fetchall()
+    conn.close()
+
+    def sort_key(cve):
+        parts = cve['cve_id'].split('-')
+        year = int(parts[1])
+        seq_num = int(parts[2])
+        return (year, seq_num)
+
+    sorted_cves = sorted(cves, key=sort_key, reverse=True)
+    return sorted_cves
