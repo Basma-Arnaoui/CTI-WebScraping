@@ -1,8 +1,8 @@
 import argparse
 import json
-import os
 import time
 import requests
+import pandas as pd
 
 def scan(url_batch, api_key):
     url = 'https://www.virustotal.com/vtapi/v2/url/scan'
@@ -11,14 +11,18 @@ def scan(url_batch, api_key):
         try:
             params = {'apikey': api_key, 'url': URL}
             response = requests.post(url, data=params)
-            scan_id_list.append(response.json()['scan_id'])
+            response_json = response.json()
+            if 'scan_id' in response_json:
+                scan_id_list.append(response_json['scan_id'])
+            elif 'error' in response_json and response_json['error'] == 'Quota exceeded':
+                raise ValueError("Rate limit detected")
         except ValueError as e:
-            print("Rate limit detected:", e)
-            continue
+            print("Rate limit detected, switching API key:", e)
+            return scan_id_list, False
         except Exception as e:
             print("Error detected:", e)
             continue
-    return scan_id_list
+    return scan_id_list, True
 
 def report(scan_id_list, api_key):
     url = 'https://www.virustotal.com/vtapi/v2/url/report'
@@ -27,60 +31,79 @@ def report(scan_id_list, api_key):
         try:
             params = {'apikey': api_key, 'resource': id}
             response = requests.get(url, params=params)
-            report_list.append(response.json())
+            response_json = response.json()
+            if 'positives' in response_json:
+                report_list.append(response_json)
+            elif 'error' in response_json and response_json['error'] == 'Quota exceeded':
+                raise ValueError("Rate limit detected")
         except ValueError as e:
-            print("Rate limit detected:", e)
-            continue
+            print("Rate limit detected, switching API key:", e)
+            return report_list, False
         except Exception as e:
             print("Error detected:", e)
             continue
-    return report_list
+    return report_list, True
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('link_fp', help="path to the file containing the links you want to scan")
-    parser.add_argument('output_fp', help="path to your output file")
-    parser.add_argument('response_fp', help='path to the response file you want to store')
-    parser.add_argument('api_key', help='VirusTotal API key')
+    parser = argparse.ArgumentParser(description="Scan URLs using VirusTotal API and write results to an Excel file.")
+    parser.add_argument('link_fp', help="Path to the Excel file containing the links you want to scan")
+    parser.add_argument('output_fp', help="Path to the output Excel file")
+    parser.add_argument('api_keys', nargs='+', help='VirusTotal API keys (provide at least two)')
     args = parser.parse_args()
 
-    url_list = []
-    with open(args.link_fp) as f:
-        for line in f:
-            url_list.append(line.rstrip())
+    df = pd.read_excel(args.link_fp)
+    urls = df.iloc[:, 0]  # assuming the URLs are in the first column
 
-    output_file = open(args.output_fp, 'a')
-    response_file = open(args.response_fp, 'a')
+    # Ensure the second column exists
+    if df.shape[1] == 1:
+        df.insert(1, "Score", "")
 
-    vt_apikey = args.api_key
+    api_keys = args.api_keys
+    current_api_index = 0
+
     response = []
     report_list = []
 
-    for i in range(len(url_list)):
+    for i in range(len(urls)):
         if i % 4 == 0:
-            time.sleep(60)
+            time.sleep(60)  # Sleep for 60 seconds to avoid rate limits
             url_batch = []
-        url_batch.append(url_list[i])
-        if i % 4 == 3 or i == len(url_list) - 1:
-            response += scan(url_batch, vt_apikey)
-            response_file.write('\n'.join(str(t) for t in response))
+        url_batch.append(urls[i])
+        if i % 4 == 3 or i == len(urls) - 1:
+            scan_results, success = scan(url_batch, api_keys[current_api_index])
+            if not success:
+                current_api_index = (current_api_index + 1) % len(api_keys)
+                scan_results, success = scan(url_batch, api_keys[current_api_index])
+            response += scan_results
 
     print('Scan complete')
 
     for i in range(len(response)):
         if i % 4 == 0:
-            time.sleep(60)
+            time.sleep(60)  # Sleep for 60 seconds to avoid rate limits
             scan_list = []
         scan_list.append(response[i])
         if i % 4 == 3 or i == len(response) - 1:
-            reportBatch = report(scan_list, vt_apikey)
+            reportBatch, success = report(scan_list, api_keys[current_api_index])
+            if not success:
+                current_api_index = (current_api_index + 1) % len(api_keys)
+                reportBatch, success = report(scan_list, api_keys[current_api_index])
             report_list += reportBatch
-            for r in reportBatch:
-                json.dump(r, output_file)
-                output_file.write("\n")
 
-    output_file.close()
-    response_file.close()
+    # Write the report data back to the Excel file
+    for i, rep in enumerate(report_list):
+        positives = rep.get('positives', 'N/A')
+        total = rep.get('total', 'N/A')
+        score = f"{positives}/{total}"
+        df.iloc[i, 1] = score  # assuming the score should be written to the second column
+
+    df.to_excel(args.output_fp, index=False)
+
+    # Write raw report data to output file
+    with open(args.output_fp, 'a') as output_file:
+        for r in report_list:
+            json.dump(r, output_file)
+            output_file.write("\n")
 
 if __name__ == '__main__':
     main()
