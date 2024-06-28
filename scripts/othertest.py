@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 from threading import Thread
 from queue import Queue
 
-def fetch_urlvoid_data(domain, retries=3, timeout=60000):
+def fetch_urlvoid_data(domain, retries=2, timeout=40000):
     ua = UserAgent()
     attempt = 0
     while attempt < retries:
@@ -23,6 +23,12 @@ def fetch_urlvoid_data(domain, retries=3, timeout=60000):
                 print(f"Thread {threading.current_thread().name} - Fetching {domain}, attempt {attempt + 1}")
                 urlvoid_url = f'https://www.urlvoid.com/scan/{domain}/'
                 page.goto(urlvoid_url, timeout=timeout)
+
+                # Check for "Report Not Found" message
+                if "Report Not Found" in page.content():
+                    print(f"Thread {threading.current_thread().name} - Report Not Found for {domain}. Moving on...")
+                    browser.close()
+                    return domain, 'Report Not Found'
 
                 # Wait for the score selector and get the score text
                 page.wait_for_selector('.label.label-success', timeout=30000)
