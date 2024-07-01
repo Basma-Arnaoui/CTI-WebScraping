@@ -30,7 +30,7 @@ def bleepingcomputer_scraper():
         try:
             title_element = article.find('h4').find('a')
             summary_element = article.find('p')
-            date_element = article.find('time')
+            date_element = article.find('li', class_='bc_news_date')
             image_element = article.find('div', class_='bc_latest_news_img').find('img')
 
             if not title_element or not summary_element:
@@ -39,7 +39,7 @@ def bleepingcomputer_scraper():
 
             title = title_element.text.strip()
             summary = summary_element.text.strip()
-            date = date_element['datetime'].strip() if date_element and date_element.has_attr('datetime') else 'N/A'
+            date = date_element.text.strip() if date_element else 'N/A'
             url = title_element['href']
 
             # Handle lazy-loaded images with `data-src`
@@ -76,13 +76,12 @@ def bleepingcomputer_scraper():
 
 if __name__ == "__main__":
     keywords = ['cti', 'data', 'cyber', 'ai', 'machine']
-    articles = bleepingcomputer_scraper(keywords)
+    articles = bleepingcomputer_scraper()
     print(f"Total articles found: {len(articles)}")
     for article in articles:
         print(f"Title: {article.title}")
         print(f"URL: {article.url}")
         print(f"Summary: {article.summary}")
         print(f"Date: {article.date}")
-        print(f"Keywords: {article.keywords}")
         print(article.image)
         print("\n")

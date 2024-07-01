@@ -131,5 +131,16 @@ def get_sorted_cves(sort_order='date'):
 
         sorted_cves = sorted(cves, key=sort_key, reverse=True)
         return sorted_cves
+def get_vendor_distribution(cve_list):
+    current_year = datetime.now().year
+    vendor_counter = {}
 
+    for cve in cve_list:
+        date_added = cve.get('Date Added')
+        if date_added and datetime.strptime(date_added, "%Y-%m-%d").year == current_year:
+            vendor = cve.get('Vendor Project')
+            if vendor:
+                vendor_counter[vendor] = vendor_counter.get(vendor, 0) + 1
+
+    return vendor_counter
 

@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for
 from app.models import Article
-from app.models import get_sorted_cves
+from app.models import get_sorted_cves, get_vendor_distribution
 import json
+from collections import Counter
+from datetime import datetime
+
 app = Flask(__name__)
 
 
@@ -37,6 +40,9 @@ def filter_by_keywords(page=1):
 
     updated_cves = []
     severity_counts = {'CRITICAL': 0, 'HIGH': 0, 'MEDIUM': 0, 'LOW': 0, 'UNKNOWN': 0}
+    vendor_counter = Counter()
+
+    current_year = datetime.now().year
 
     for cve in paginated_cves:
         cve_dict = dict(cve)
@@ -58,14 +64,21 @@ def filter_by_keywords(page=1):
         else:
             severity_counts['UNKNOWN'] += 1
 
+        # Count vendors for the current year
+        date_added = cve_dict.get('date_added', '')
+        if date_added.startswith(str(current_year)):
+            vendor_counter[cve_dict['vendor_project']] += 1
+
     total_cves = len(sorted_cves)
     total_pages = (total_cves + per_page - 1) // per_page
 
     severity_counts_json = json.dumps(severity_counts)
+    vendor_counts_json = json.dumps(vendor_counter)
 
     return render_template('home.html', articles=articles, current_filter=source, keywords=keywords, cves=updated_cves,
                            page=page, total_pages=total_pages, sort_order=sort_order,
-                           severity_counts_json=severity_counts_json)
+                           severity_counts_json=severity_counts_json, vendor_counts_json=vendor_counts_json)
+
 
 
 @app.route('/clear_filters', methods=['POST'])

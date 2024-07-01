@@ -86,8 +86,11 @@
             <!-- Chart Section -->
             <div class="chart-container">
                 <canvas id="severityChart"></canvas>
+                <canvas id="vendorChart" style="margin-top: 20px;"></canvas>
+
             </div>
         </div>
+        <br><br>
 
         <!-- Keyword Search Form -->
         <form id="filter-form" action="/filter" method="post">
@@ -251,6 +254,38 @@
             document.getElementById('severityChart'),
             config
         );
+         const vendorCounts = {{ vendor_counts_json|safe }};
+    const vendorLabels = Object.keys(vendorCounts);
+    const vendorData = Object.values(vendorCounts);
+
+    const vendorChartConfig = {
+        type: 'bar',
+        data: {
+            labels: vendorLabels,
+            datasets: [{
+                label: 'Top Vendors of 2024',
+                data: vendorData,
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            maintainAspectRatio: true,
+            aspectRatio: 1.5,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    };
+
+    // Render the vendor chart
+    new Chart(
+        document.getElementById('vendorChart'),
+        vendorChartConfig
+    );
     });
     </script>
 
