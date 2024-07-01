@@ -32,55 +32,62 @@
             <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), sort='severity', page=1) }}" class="btn btn-secondary {% if sort_order == 'severity' %}active{% endif %}">Sort by Severity</a>
         </div>
 
-        <!-- CVEs Section -->
-        <h2>Top 5 CVEs</h2>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>CVE ID</th>
-                    <th>Details</th>
-                    <th>Score</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cve in cves %}
-                <tr>
-                    <td>{{ cve['cve_id'] }}</td>
-                    <td class="details">
-                        <div class="title">{{ cve['vulnerability_name'] }}</div>
-                        <div>{{ cve['short_description'] }}</div>
-                        <a href="{{ cve['nvd_link'] }}" target="_blank" class="nvd-link">NVD Link</a>
-                    </td>
-                    <td class="score">
-                        {% if 'HIGH' in cve['score'] %}
-                        <span class="severity-high">{{ cve['score'] }}</span>
-                        {% elif 'MEDIUM' in cve['score'] %}
-                        <span class="severity-medium">{{ cve['score'] }}</span>
-                        {% elif 'LOW' in cve['score'] %}
-                        <span class="severity-low">{{ cve['score'] }}</span>
-                        {% elif 'CRITICAL' in cve['score'] %}
-                        <span class="severity-critical">{{ cve['score'] }}</span>
-                        {% else %}
-                        <span class="severity-unknown">{{ cve['score'] }}</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <!-- Flex Container for Table and Chart -->
+        <div class="d-flex flex-row">
+            <!-- CVEs Section -->
+            <div class="cve-table">
+                <h2>Top 5 CVEs</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>CVE ID</th>
+                            <th>Details</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cve in cves %}
+                        <tr>
+                            <td>{{ cve['cve_id'] }}</td>
+                            <td class="details">
+                                <div class="title">{{ cve['vulnerability_name'] }}</div>
+                                <div>{{ cve['short_description'] }}</div>
+                                <a href="{{ cve['nvd_link'] }}" target="_blank" class="nvd-link">NVD Link</a>
+                            </td>
+                            <td class="score">
+                                {% if 'HIGH' in cve['score'] %}
+                                <span class="severity-high">{{ cve['score'] }}</span>
+                                {% elif 'MEDIUM' in cve['score'] %}
+                                <span class="severity-medium">{{ cve['score'] }}</span>
+                                {% elif 'LOW' in cve['score'] %}
+                                <span class="severity-low">{{ cve['score'] }}</span>
+                                {% elif 'CRITICAL' in cve['score'] %}
+                                <span class="severity-critical">{{ cve['score'] }}</span>
+                                {% else %}
+                                <span class="severity-unknown">{{ cve['score'] }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
 
-        <!-- Pagination for CVEs -->
-        <div class="pagination">
-            {% if page > 1 %}
-            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page-1, sort=sort_order) }}">Previous</a>
-            {% endif %}
-            {% if page < total_pages %}
-            <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page+1, sort=sort_order) }}">Next</a>
-            {% endif %}
+                <!-- Pagination for CVEs -->
+                <div class="pagination">
+                    {% if page > 1 %}
+                    <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page-1, sort=sort_order) }}">Previous</a>
+                    {% endif %}
+                    {% if page < total_pages %}
+                    <a href="{{ url_for('filter_by_keywords', source=current_filter, keywords=','.join(keywords), page=page+1, sort=sort_order) }}">Next</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="chart-container">
+                <canvas id="severityChart"></canvas>
+            </div>
         </div>
-
-        <!-- Chart Section -->
-        <canvas id="severityChart" width="50" height="50"></canvas>
 
         <!-- Keyword Search Form -->
         <form id="filter-form" action="/filter" method="post">
@@ -130,112 +137,122 @@
 
     </div>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const keywordInput = document.getElementById('keyword-input');
-            const keywordsList = document.getElementById('keywords-list');
-            const keywordsInput = document.getElementById('keywords-input');
-            const addKeywordBtn = document.getElementById('add-keyword-btn');
-            let keywords = keywordsInput.value ? keywordsInput.value.split(',') : [];
+    document.addEventListener("DOMContentLoaded", function() {
+        const keywordInput = document.getElementById('keyword-input');
+        const keywordsList = document.getElementById('keywords-list');
+        const keywordsInput = document.getElementById('keywords-input');
+        const addKeywordBtn = document.getElementById('add-keyword-btn');
+        let keywords = keywordsInput.value ? keywordsInput.value.split(',') : [];
 
-            function addKeyword(keyword) {
-                if (keyword && !keywords.includes(keyword)) {
-                    keywords.push(keyword);
-                    const keywordItem = document.createElement('span');
-                    keywordItem.className = 'keyword-item';
-                    keywordItem.textContent = keyword;
-                    keywordsList.appendChild(keywordItem);
-                    keywordsInput.value = keywords.join(',');
-                    keywordInput.value = '';
-                    keywordItem.addEventListener('click', function() {
-                        removeKeyword(keywordItem.textContent);
-                    });
-                }
-            }
-
-            function removeKeyword(keyword) {
-                keywords = keywords.filter(k => k !== keyword);
+        function addKeyword(keyword) {
+            if (keyword && !keywords.includes(keyword)) {
+                keywords.push(keyword);
+                const keywordItem = document.createElement('span');
+                keywordItem.className = 'keyword-item';
+                keywordItem.textContent = keyword;
+                keywordsList.appendChild(keywordItem);
                 keywordsInput.value = keywords.join(',');
-                const keywordItems = Array.from(document.getElementsByClassName('keyword-item'));
-                keywordItems.forEach(item => {
-                    if (item.textContent === keyword) {
-                        keywordsList.removeChild(item);
-                    }
+                keywordInput.value = '';
+                keywordItem.addEventListener('click', function() {
+                    removeKeyword(keywordItem.textContent);
                 });
             }
+        }
 
-            keywordInput.addEventListener('keypress', function(event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    addKeyword(keywordInput.value.trim());
+        function removeKeyword(keyword) {
+            keywords = keywords.filter(k => k !== keyword);
+            keywordsInput.value = keywords.join(',');
+            const keywordItems = Array.from(document.getElementsByClassName('keyword-item'));
+            keywordItems.forEach(item => {
+                if (item.textContent === keyword) {
+                    keywordsList.removeChild(item);
                 }
             });
+        }
 
-            addKeywordBtn.addEventListener('click', function() {
+        keywordInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
                 addKeyword(keywordInput.value.trim());
-            });
-
-            document.querySelectorAll('.keyword-item').forEach(function(item) {
-                item.addEventListener('click', function() {
-                    removeKeyword(item.textContent);
-                });
-            });
-
-            document.querySelectorAll('.read-more-link').forEach(function(link) {
-                link.addEventListener('click', function() {
-                    let articleContainer = this.closest('.article-container');
-                    articleContainer.classList.toggle('expanded');
-                });
-            });
-
-            // Data for the chart
-            const severityCounts = {{ severity_counts_json|safe }};
-            console.log("Severity Counts:", severityCounts);  // Debug statement
-
-            const data = {
-                labels: Object.keys(severityCounts),
-                datasets: [{
-                    label: 'Severity Distribution in 2024',
-                    data: Object.values(severityCounts),
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.8)',
-                        'rgba(255, 159, 64, 0.8)',
-                        'rgba(255, 205, 86, 0.8)',
-                        'rgba(75, 192, 192, 0.8)',
-                        'rgba(201, 203, 207, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgb(255, 99, 132)',
-                        'rgb(255, 159, 64)',
-                        'rgb(255, 205, 86)',
-                        'rgb(75, 192, 192)',
-                        'rgb(201, 203, 207)'
-                    ],
-                    borderWidth: 1,
-                    barPercentage: 0.5,  // Adjust this value to make bars skinnier
-                    categoryPercentage: 0.5
-                }]
-            };
-
-            const config = {
-                type: 'bar',
-                data: data,
-                options: {
-                maintainAspectRatio: true,  // Add this line
-                aspectRatio: 3,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                },
-            };
-
-            // Render the chart
-            new Chart(
-                document.getElementById('severityChart'),
-                config
-            );
+            }
         });
+
+        addKeywordBtn.addEventListener('click', function() {
+            addKeyword(keywordInput.value.trim());
+        });
+
+        document.querySelectorAll('.keyword-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                removeKeyword(item.textContent);
+            });
+        });
+
+        document.querySelectorAll('.read-more-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                let articleContainer = this.closest('.article-container');
+                articleContainer.classList.toggle('expanded');
+            });
+        });
+
+        document.querySelectorAll('.read-more').forEach(function(link) {
+            link.addEventListener('click', function() {
+                const fullDescription = this.previousElementSibling;
+                fullDescription.classList.toggle('show');
+                this.textContent = fullDescription.classList.contains('show') ? 'Read less' : 'Read more';
+            });
+        });
+
+        // Data for the chart
+        const severityCounts = {{ severity_counts_json|safe }};
+        console.log("Severity Counts:", severityCounts);  // Debug statement
+        const currentYear = new Date().getFullYear();
+
+        const data = {
+            labels: Object.keys(severityCounts),
+            datasets: [{
+                label: `Severity Distribution in ${currentYear}`,  // Use backticks for template literals
+                data: Object.values(severityCounts),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(255, 159, 64, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(201, 203, 207, 0.8)'
+                ],
+                borderColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(255, 159, 64)',
+                    'rgb(255, 205, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(201, 203, 207)'
+                ],
+                borderWidth: 1,
+                barPercentage: 0.5,
+                categoryPercentage: 0.5
+            }]
+        };
+
+        const config = {
+            type: 'bar',
+            data: data,
+            options: {
+                maintainAspectRatio: true,
+                aspectRatio: 1.5,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            },
+        };
+
+        // Render the chart
+        new Chart(
+            document.getElementById('severityChart'),
+            config
+        );
+    });
     </script>
+
 </body>
 </html>

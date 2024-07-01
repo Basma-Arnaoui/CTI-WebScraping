@@ -1,5 +1,0 @@
-API key = OmcWS46umvpaVseEyHtcCQRUW
-API key secret = FhEAajmAeergFqzsqd6hFltH7nyocvAGHhd9FXMNeGkWUbgNod
-bearer token = AAAAAAAAAAAAAAAAAAAAAAQjuQEAAAAAeBEpM9ofwjeVEPfj2hf9fzppkK4%3D41CdReqUPp7vYE8MuPlVUhCr2o6ds7qWH1ZdjeW3pg16qw8KU4
-access token = 1801167645485432832-Y7I3atOCOPuL0AsYso1KpnjeTwrMkL
-access token secret : db3kLF6faFL66J2SQxW3PzeSeKtCiD0fkadCbAOshTydy

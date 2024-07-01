@@ -1,5 +1,7 @@
 import sqlite3
 import os
+from datetime import datetime
+
 
 ARTICLES_DATABASE = os.path.join(os.path.dirname(__file__), '..', 'articles.db')
 CVE_DATABASE = os.path.join(os.path.dirname(__file__), '..', 'cve.db')
@@ -111,11 +113,11 @@ def insert_cve_data(cve_data):
 
 def get_sorted_cves(sort_order='date'):
     conn = get_cve_db_connection()
+    current_year = datetime.now().year
+
     if sort_order == 'severity':
-        cves = conn.execute(
-            'SELECT * FROM cves WHERE cve_id LIKE "CVE-2024-%" ORDER BY CAST(SUBSTR(score, 1, INSTR(score, " ")) AS FLOAT) DESC'
-        ).fetchall()
-        conn.close()
+        query = f'SELECT * FROM cves WHERE cve_id LIKE "CVE-{current_year}-%" ORDER BY CAST(SUBSTR(score, 1, INSTR(score, " ")) AS FLOAT) DESC'
+        cves = conn.execute(query).fetchall()
         return cves
     else:
         cves = conn.execute('SELECT * FROM cves').fetchall()
