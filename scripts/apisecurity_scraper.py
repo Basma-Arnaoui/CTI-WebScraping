@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 import sys
 import os
 import re
+from datetime import datetime
 
 # Add the parent directory of 'app' to PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -34,9 +35,11 @@ def api_security_scraper(limit=50):
             title = re.sub(r'^Issue \d+: ', '', title)  # Remove "Issue X:" prefix
             link = item.find('link').text.strip()
             pub_date = item.find('pubDate').text.strip()
-            creator = item.find('{http://purl.org/dc/elements/1.1/}creator').text.strip()
             description = item.find('description').text.strip()
             content_encoded = item.find('{http://purl.org/rss/1.0/modules/content/}encoded').text
+
+            date_obj = datetime.strptime(pub_date, "%a, %d %b %Y %H:%M:%S %z")
+            uniform_date = date_obj.strftime("%Y-%m-%d")
 
             # Use BeautifulSoup to parse HTML content
             soup = BeautifulSoup(content_encoded, 'html.parser')
@@ -55,7 +58,7 @@ def api_security_scraper(limit=50):
                 title=title,
                 url=link,
                 summary=description,
-                date=pub_date,
+                date=uniform_date,
                 source='API Security News',
                 image=image_url
             )

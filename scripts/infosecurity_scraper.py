@@ -39,12 +39,10 @@ def infosecurity_scraper():
                 title = title_tag.get_text(strip=True)
                 summary = summary_tag.get_text(strip=True)
                 date_str = meta_tag.get_text(strip=True)
+                date_obj = datetime.strptime(date_str, "%d %b %Y")
+                uniform_date = date_obj.strftime("%Y-%m-%d")
 
-                # Correct the date extraction logic
-                try:
-                    date = datetime.strptime(date_str, "%d %b %Y").strftime('%Y-%m-%d')
-                except ValueError:
-                    date = "N/A"
+
 
                 link = article.find('a')['href']
                 image = image_tag['src'] if image_tag else None
@@ -57,7 +55,7 @@ def infosecurity_scraper():
                         title=title,
                         url=link,
                         summary=summary,
-                        date=date,
+                        date=uniform_date,
                         source='Info Security',
                         image=image
                     )
@@ -68,12 +66,11 @@ def infosecurity_scraper():
 
 if __name__ == "__main__":
     keywords = ["ransomware", "spyware", "vulnerability"]  # Add your keywords here
-    articles = infosecurity_scraper(keywords)
+    articles = infosecurity_scraper()
     print(f"Total articles found: {len(articles)}")
     for article in articles:
         print(f"Title: {article.title}")
         print(f"URL: {article.url}")
         print(f"Summary: {article.summary}")
         print(f"Date: {article.date}")
-        print(f"Keywords: {article.keywords}")
         print("\n")

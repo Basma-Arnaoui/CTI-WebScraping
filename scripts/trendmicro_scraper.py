@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 import sys
 import os
 import re
+from datetime import datetime
 
 # Add the parent directory of 'app' to PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -47,6 +48,9 @@ def trendmicro_scraper(limit=50):
             enclosure = item.find('enclosure')
             image_url = enclosure.get('url') if enclosure is not None else default_image_url
 
+            date_obj = datetime.strptime(pub_date, "%a, %d %b %Y %H:%M:%S %z")
+            uniform_date = date_obj.strftime("%Y-%m-%d")
+
             # Check if the image URL is valid, else use default image URL
             if not is_image_url_valid(image_url):
                 image_url = default_image_url
@@ -59,7 +63,7 @@ def trendmicro_scraper(limit=50):
                 title=title,
                 url=link,
                 summary=description,
-                date=pub_date,
+                date=uniform_date,
                 source='Trend Micro',
                 image=image_url
             )

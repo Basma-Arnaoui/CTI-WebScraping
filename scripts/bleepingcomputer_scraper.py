@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import re
 import sys
 import os
+from datetime import datetime
+
 
 # Add the parent directory of 'app' to PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -41,6 +43,8 @@ def bleepingcomputer_scraper():
             summary = summary_element.text.strip()
             date = date_element.text.strip() if date_element else 'N/A'
             url = title_element['href']
+            date_obj = datetime.strptime(date, "%B %d, %Y")
+            uniform_date = date_obj.strftime("%Y-%m-%d")
 
             # Handle lazy-loaded images with `data-src`
             if image_element:
@@ -63,7 +67,7 @@ def bleepingcomputer_scraper():
                     title=title,
                     url=url,
                     summary=summary,
-                    date=date,
+                    date=uniform_date,
                     source='Bleeping Computer',
                     image=image
                 )

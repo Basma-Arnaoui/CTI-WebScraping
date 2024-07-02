@@ -3,7 +3,7 @@ import re
 from bs4 import BeautifulSoup
 import sys
 import os
-
+from datetime import datetime
 # Add the parent directory of 'app' to PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -21,7 +21,10 @@ def securityweek_scraper():
         summary_html = entry.summary
         summary = BeautifulSoup(summary_html, "html.parser").get_text()
         url = entry.link
+
         date = entry.published if 'published' in entry else 'N/A'
+        date_obj = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %z")
+        uniform_date = date_obj.strftime("%Y-%m-%d")
 
         # Extract the image from the summary HTML
         summary_soup = BeautifulSoup(summary_html, "html.parser")
@@ -33,7 +36,7 @@ def securityweek_scraper():
                 title=title,
                 url=url,
                 summary=summary,
-                date=date,
+                date=uniform_date,
                 source='Security Week',
                 image="https://media.licdn.com/dms/image/C4E0BAQH2tHghiPJr0g/company-logo_200_200/0/1675885800622/securityweek_logo?e=2147483647&v=beta&t=OugMo88yYehO7RT_M3Xu3vD-_X_7u-Md3GPbm0bZ8Rc"
             )

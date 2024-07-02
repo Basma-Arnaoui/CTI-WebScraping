@@ -3,6 +3,7 @@ import re
 from bs4 import BeautifulSoup
 import sys
 import os
+from datetime import datetime
 
 # Add the parent directory of 'app' to PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -24,6 +25,8 @@ def thehackernews_scraper():
         url = entry.link
         date = entry.published
         summary = BeautifulSoup(entry.summary, "html.parser").get_text()
+        date_obj = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %z")
+        uniform_date = date_obj.strftime("%Y-%m-%d")
 
         # Extract the image URL from the enclosure field
         image = entry.enclosures[0]['url'] if 'enclosures' in entry and entry.enclosures else None
@@ -34,7 +37,7 @@ def thehackernews_scraper():
                 title=title,
                 url=url,
                 summary=summary,
-                date=date,
+                date=uniform_date,
                 source='The Hacker News',
                 image=image
             )

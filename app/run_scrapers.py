@@ -10,6 +10,8 @@ from scripts.borncity_scraper import borncity_scraper
 from scripts.zataznews_scraper import zataz_scraper
 from scripts.apisecurity_scraper import api_security_scraper
 from scripts.trendmicro_scraper import trendmicro_scraper
+from scripts.cybersecuritydive_scraper import cybersecuritydive_scraper
+from scripts.developertech_scraper import developertech_scraper
 from app.models import insert_cve_data
 
 def run_all_scrapers():
@@ -22,7 +24,8 @@ def run_all_scrapers():
     zataz_articles = zataz_scraper()
     apisecurity_articles = api_security_scraper(10)
     trendmicro_articles = trendmicro_scraper(10)
-
+    cybersecuritydive_articles = cybersecuritydive_scraper(2)
+    developertech_articles = developertech_scraper()
 
     print(f"Bleeping Computer: {len(bleepingcomputer_articles)} articles fetched")
     #print(f"Hacker News: {len(hackernews_articles)} articles fetched")
@@ -33,6 +36,10 @@ def run_all_scrapers():
     print(f"Zatas News: {len(zataz_articles)} articles fetched")
     print(f"Api Security: {len(apisecurity_articles)} articles fetched")
     print(f"Trend Micro: {len(trendmicro_articles)} articles fetched")
+    print(f"Cybersecurity Dive: {len(cybersecuritydive_articles)} articles fetched")
+    print(f"Developer Tech: {len(developertech_articles)} articles fetched")
+
+
 
 
 

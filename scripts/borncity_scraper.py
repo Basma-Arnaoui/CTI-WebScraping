@@ -1,10 +1,13 @@
 import requests
 from bs4 import BeautifulSoup
-import sqlite3
+import re
 import sys
 import os
+from datetime import datetime
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from app.models import get_db_connection, Article, get_cve_db_connection
+
 
 
 
@@ -41,12 +44,20 @@ def borncity_scraper(max_pages):
                 date = date_element.text.strip()
                 url = title_element['href']
 
+                # Extract the date part from the string
+                extracted_date_str = re.search(r'\d{4}-\d{2}-\d{2}', date).group()
+
+                # Parse the extracted date string
+                date_obj = datetime.strptime(extracted_date_str, "%Y-%m-%d")
+
+                # Convert to the uniform format
+                uniform_date = date_obj.strftime("%Y-%m-%d")
 
                 keyword_article = Article(
                     title=title,
                     url=url,
                     summary=summary,
-                    date=date,
+                    date=uniform_date,
                     source='Born City',
                     image="https://borncity.com/win/wp-content/uploads/sites/2/2014/12/cropped-header04.jpg"
                 )
