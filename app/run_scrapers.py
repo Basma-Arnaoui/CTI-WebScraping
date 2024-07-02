@@ -9,6 +9,7 @@ from scripts.cisa_scraper import scrape_cisa_known_exploited_vulnerabilities
 from scripts.borncity_scraper import borncity_scraper
 from scripts.zataznews_scraper import zataz_scraper
 from scripts.apisecurity_scraper import api_security_scraper
+from scripts.trendmicro_scraper import trendmicro_scraper
 from app.models import insert_cve_data
 
 def run_all_scrapers():
@@ -20,6 +21,7 @@ def run_all_scrapers():
     borncity_articles = borncity_scraper(3)
     zataz_articles = zataz_scraper()
     apisecurity_articles = api_security_scraper(10)
+    trendmicro_articles = trendmicro_scraper(10)
 
 
     print(f"Bleeping Computer: {len(bleepingcomputer_articles)} articles fetched")
@@ -30,6 +32,8 @@ def run_all_scrapers():
     print(f"Born City: {len(borncity_articles)} articles fetched")
     print(f"Zatas News: {len(zataz_articles)} articles fetched")
     print(f"Api Security: {len(apisecurity_articles)} articles fetched")
+    print(f"Trend Micro: {len(trendmicro_articles)} articles fetched")
+
 
 
     #cve_data = scrape_cisa_known_exploited_vulnerabilities()
