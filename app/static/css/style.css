@@ -248,3 +248,20 @@ body {
 .table{
     width : 80%;
 }
+.summary-container {
+    background-color: #f8f9fa; /* Light gray background */
+    border: 1px solid #dee2e6; /* Border color */
+    border-radius: 5px; /* Rounded corners */
+    padding: 15px; /* Padding inside the container */
+    margin-bottom: 20px; /* Space below the container */
+}
+
+.summary-container h2 {
+    font-size: 1.5rem; /* Font size for the heading */
+    margin-bottom: 10px; /* Space below the heading */
+}
+
+.summary-container p {
+    font-size: 1rem; /* Font size for the paragraph */
+    margin: 0; /* Remove default margin */
+}

@@ -24,7 +24,7 @@ def run_all_scrapers():
     zataz_articles = zataz_scraper()
     apisecurity_articles = api_security_scraper(10)
     trendmicro_articles = trendmicro_scraper(10)
-    cybersecuritydive_articles = cybersecuritydive_scraper(2)
+    cybersecuritydive_articles = cybersecuritydive_scraper(1)
     developertech_articles = developertech_scraper()
 
     print(f"Bleeping Computer: {len(bleepingcomputer_articles)} articles fetched")

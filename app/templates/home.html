@@ -41,7 +41,7 @@
         <div class="d-flex flex-row">
             <!-- CVEs Section -->
             <div class="cve-table">
-                <h2>Top 5 CVEs</h2>
+                <h2>CVE Table : </h2>
                 <table class="table table-bordered">
                     <thead>
                         <tr>
@@ -96,6 +96,13 @@
             </div>
         </div>
         <br><br>
+        {% if current_filter != 'All' %}
+        <!-- Summary of Yesterday's News -->
+        <div class="summary-container mb-4">
+            <h2>Summary of Yesterday's News</h2>
+            <p>{{ summary }}</p>
+        </div>
+        {% endif %}
 
         <!-- Keyword Search Form -->
         <form id="filter-form" action="/filter" method="post">

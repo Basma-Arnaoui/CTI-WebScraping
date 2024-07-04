@@ -10,12 +10,12 @@ from contextlib import closing
 
 # Start the Flask app
 if __name__ == "__main__":
-    with closing(sqlite3.connect('articles.db')) as conn:
-        with conn:
-            conn.execute('DELETE FROM articles')
+    #with closing(sqlite3.connect('articles.db')) as conn:
+     #   with conn:
+      #      conn.execute('DELETE FROM articles')
     # Initialize the database
-    initialize_db()
+    #initialize_db()
     #initialize_cve_db()
-    run_all_scrapers()
+    #run_all_scrapers()
 
     app.run()

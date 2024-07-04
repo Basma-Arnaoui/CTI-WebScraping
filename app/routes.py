@@ -4,7 +4,7 @@ from app.models import get_sorted_cves, get_vendor_distribution
 import json
 from collections import Counter
 from datetime import datetime
-
+from scripts.articles_summary import get_yesterdays_summary
 app = Flask(__name__)
 
 
@@ -12,7 +12,6 @@ app = Flask(__name__)
 @app.route('/page/<int:page>')
 def home(page=1):
     return redirect(url_for('filter_by_keywords', source='All', page=page))
-
 
 @app.route('/filter', methods=['POST', 'GET'])
 def filter_by_keywords(page=1):
@@ -75,9 +74,12 @@ def filter_by_keywords(page=1):
     severity_counts_json = json.dumps(severity_counts)
     vendor_counts_json = json.dumps(vendor_counter)
 
+    summary = get_yesterdays_summary(source)
+
     return render_template('home.html', articles=articles, current_filter=source, keywords=keywords, cves=updated_cves,
                            page=page, total_pages=total_pages, sort_order=sort_order,
-                           severity_counts_json=severity_counts_json, vendor_counts_json=vendor_counts_json)
+                           severity_counts_json=severity_counts_json, vendor_counts_json=vendor_counts_json, summary=summary)
+
 
 
 
