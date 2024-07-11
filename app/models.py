@@ -1,10 +1,14 @@
 import sqlite3
 import os
 from datetime import datetime
-
-
-ARTICLES_DATABASE = os.path.join(os.path.dirname(__file__), '..', 'articles.db')
+import sqlite3
+import sys
 CVE_DATABASE = os.path.join(os.path.dirname(__file__), '..', 'cve.db')
+ARTICLES_DATABASE = os.path.join(os.path.dirname(__file__), '..', 'articles.db')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from contextlib import closing
+
+
 
 class Article:
     def __init__(self, title, url, summary, date, source, image=None):
@@ -33,6 +37,8 @@ class Article:
                 query += f' WHERE {keyword_query}'
             for keyword in keywords:
                 params.extend([f'*{keyword}*', f'*{keyword}*', f'*{keyword}*'])
+
+        query += ' ORDER BY date DESC'  # Add this line to sort by date
 
         cursor = conn.execute(query, params)
         articles = [
@@ -143,4 +149,16 @@ def get_vendor_distribution(cve_list):
                 vendor_counter[vendor] = vendor_counter.get(vendor, 0) + 1
 
     return vendor_counter
+
+
+def refresh_articles():
+    print("andeletiw")
+    from app.run_scrapers import run_all_scrapers
+
+    with closing(sqlite3.connect('articles.db')) as conn:
+        with conn:
+            conn.execute('DELETE FROM articles')
+    initialize_db()
+    run_all_scrapers()
+
 

@@ -1,10 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for
+
 from app.models import Article
 from app.models import get_sorted_cves, get_vendor_distribution
 import json
 from collections import Counter
 from datetime import datetime
-from scripts.articles_summary import get_yesterdays_summary
+from scripts.articles_summary import get_yesterdays_summary, rewrite_summary
+
+import os
+ARTICLES_DATABASE = os.path.join(os.path.dirname(__file__), '..', 'articles.db')
+
+
 app = Flask(__name__)
 
 
@@ -88,7 +94,14 @@ def clear_filters():
     source = request.form.get('current_filter', 'All')
     return redirect(url_for('filter_by_keywords', source=source, keywords=''))
 
+@app.route('/refresh', methods=['POST'])
+def refresh():
+    print("w33")
+    from app.models import refresh_articles
+    refresh_articles()
+    return redirect(url_for('home'))
 
-from .scheduler import start_scheduler
-
-start_scheduler()
+@app.route('/rewrite_summary/<source>', methods=['POST'])
+def rewrite_summary_route(source):
+    message = rewrite_summary(source)
+    return redirect(url_for('filter_by_keywords', source=source))

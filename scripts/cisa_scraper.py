@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
-
+import sqlite3
+import os
+DATABASE = os.path.join(os.path.dirname(__file__), '..', 'cve.db')
 
 def scrape_cisa_known_exploited_vulnerabilities():
     url = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
@@ -72,9 +74,46 @@ def get_cvss_score(cve_id):
     else:
         return "Score not found"
 
+def update_cve_table():
+    # Connect to the database
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+
+    # Get the current count of CVEs in the database
+    cursor.execute("SELECT COUNT(*) FROM cves")
+    current_cve_count = cursor.fetchone()[0]
+
+    # Fetch the JSON data again to get the current count
+    url = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+    response = requests.get(url)
+    data = response.json()
+    json_cve_count = data["count"]
+
+    # If the count in JSON is greater, add new CVEs
+    if json_cve_count > current_cve_count:
+        # Scrape to get the new CVEs
+        new_cves = scrape_cisa_known_exploited_vulnerabilities()
+        existing_cves = set(row[0] for row in cursor.execute("SELECT cve_id FROM cves").fetchall())
+        for cve_info in new_cves:
+            if cve_info["CVE ID"] not in existing_cves:
+                cve_info["Score"] = get_cvss_score(cve_info["CVE ID"])
+                cursor.execute("""
+                    INSERT INTO cves (
+                        cve_id, vendor_project, product, vulnerability_name, date_added,
+                        short_description, required_action, due_date,
+                        known_ransomware_campaign_use, notes, score
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    cve_info["CVE ID"], cve_info["Vendor Project"], cve_info["Product"],
+                    cve_info["Vulnerability Name"], cve_info["Date Added"],
+                    cve_info["Short Description"], cve_info["Required Action"],
+                    cve_info["Due Date"], cve_info["Known Ransomware Campaign Use"],
+                    cve_info["Notes"], cve_info["Score"]
+                ))
+        conn.commit()
+
+    conn.close()
+
 
 if __name__ == "__main__":
-    cve_list = scrape_cisa_known_exploited_vulnerabilities()
-    no_score_count = 0
-    print(cve_list[-1]['CVE ID'])
-    print(get_cvss_score(cve_list[-1]['CVE ID']))
+    update_cve_table()

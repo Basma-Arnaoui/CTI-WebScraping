@@ -95,7 +95,16 @@
 
             </div>
         </div>
-        <br><br>
+        <br>
+        <!-- Add this within your existing HTML template, e.g., filter.html -->
+        <!-- Add this within your existing HTML template, e.g., home.html -->
+        {% if current_filter != 'All' %}
+        <form action="{{ url_for('rewrite_summary_route', source=current_filter) }}" method="post" class="mt-3">
+            <button type="submit" class="btn btn-success">Rewrite Summary</button>
+        </form>
+        {% endif %}
+
+
         {% if current_filter != 'All' %}
         <!-- Summary of Yesterday's News -->
         <div class="summary-container mb-4">
@@ -103,6 +112,11 @@
             <p>{{ summary }}</p>
         </div>
         {% endif %}
+        <br>
+
+        <form action="{{ url_for('refresh') }}" method="post" class="mt-3">
+            <button type="submit" class="btn btn-success">Refresh Articles</button>
+        </form>
 
         <!-- Keyword Search Form -->
         <form id="filter-form" action="/filter" method="post">
