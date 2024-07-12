@@ -27,7 +27,7 @@ def run_all_scrapers():
     zataz_articles = zataz_scraper()
     apisecurity_articles = api_security_scraper(10)
     trendmicro_articles = trendmicro_scraper(10)
-    cybersecuritydive_articles = cybersecuritydive_scraper(1)
+    #cybersecuritydive_articles = cybersecuritydive_scraper(1)
     developertech_articles = developertech_scraper()
 
     print(f"Bleeping Computer: {len(bleepingcomputer_articles)} articles fetched")
@@ -39,7 +39,7 @@ def run_all_scrapers():
     print(f"Zatas News: {len(zataz_articles)} articles fetched")
     print(f"Api Security: {len(apisecurity_articles)} articles fetched")
     print(f"Trend Micro: {len(trendmicro_articles)} articles fetched")
-    print(f"Cybersecurity Dive: {len(cybersecuritydive_articles)} articles fetched")
+    #print(f"Cybersecurity Dive: {len(cybersecuritydive_articles)} articles fetched")
     print(f"Developer Tech: {len(developertech_articles)} articles fetched")
 
 

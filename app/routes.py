@@ -5,7 +5,7 @@ from app.models import get_sorted_cves, get_vendor_distribution
 import json
 from collections import Counter
 from datetime import datetime
-from scripts.articles_summary import get_yesterdays_summary, rewrite_summary
+from scripts.articles_summary import get_yesterdays_summary, rewrite_summary, update_summaries_db
 
 import os
 ARTICLES_DATABASE = os.path.join(os.path.dirname(__file__), '..', 'articles.db')
